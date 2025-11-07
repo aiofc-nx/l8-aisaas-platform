@@ -12,12 +12,7 @@
 ## 快速开始
 
 ```ts
-import {
-  AnyExceptionFilter,
-  HttpExceptionFilter,
-  ApiBadRequest,
-  GeneralBadRequestException,
-} from "@hl8/exceptions";
+import { AnyExceptionFilter, HttpExceptionFilter, ApiBadRequest, GeneralBadRequestException } from "@hl8/exceptions";
 
 @Controller("/users")
 @UseFilters(AnyExceptionFilter, HttpExceptionFilter)
@@ -25,11 +20,7 @@ export class UserController {
   @Post()
   @ApiBadRequest("USER_DUPLICATED")
   create(@Body() dto: CreateUserDto) {
-    throw new GeneralBadRequestException(
-      { field: "email", message: "邮箱格式不正确" },
-      "请求参数不合法",
-      "USER_DUPLICATED",
-    );
+    throw new GeneralBadRequestException({ field: "email", message: "邮箱格式不正确" }, "请求参数不合法", "USER_DUPLICATED");
   }
 }
 ```
