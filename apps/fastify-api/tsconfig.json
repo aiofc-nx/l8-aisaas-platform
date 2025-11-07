@@ -1,0 +1,10 @@
+{
+  "extends": "@repo/typescript-config/nestjs.json",
+  "compilerOptions": {
+    "strictPropertyInitialization": false,
+    "outDir": "./dist",
+    "baseUrl": "./",
+    "strict": false,
+    "useDefineForClassFields": false
+  }
+}

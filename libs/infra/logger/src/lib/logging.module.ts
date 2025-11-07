@@ -21,14 +21,14 @@ import PinoLoggerService from "./pino-logger.service.js";
 /**
  * 日志模块选项
  */
-export interface FastifyLoggingModuleOptions {
+export interface PinoLoggerModuleOptions {
   /** 日志配置 */
   config?: Partial<LoggingConfig>;
 }
 
 @Global()
 @Module({})
-export class FastifyLoggingModule {
+export class PinoLoggingModule {
   /**
    * 注册日志模块
    *
@@ -38,14 +38,14 @@ export class FastifyLoggingModule {
    * - 优先使用 Fastify 的 Pino 实例（零开销）
    * - 支持配置验证
    *
-   * @param {FastifyLoggingModuleOptions} options - 日志配置选项
+   * @param {PinoLoggerModuleOptions} options - 日志配置选项
    * @returns {DynamicModule} 动态模块
    *
    * @example
    * ```typescript
    * @Module({
    *   imports: [
-   *     FastifyLoggingModule.forRoot({
+   *     PinoLoggingModule.forRoot({
    *       config: {
    *         level: 'debug',
    *         prettyPrint: true,
@@ -56,7 +56,7 @@ export class FastifyLoggingModule {
    * export class AppModule {}
    * ```
    */
-  static forRoot(options?: FastifyLoggingModuleOptions): DynamicModule {
+  static forRoot(options?: PinoLoggerModuleOptions): DynamicModule {
     // 验证和规范化配置
     const loggingConfig = options?.config
       ? ConfigValidator.validate(LoggingConfig, {
@@ -66,7 +66,7 @@ export class FastifyLoggingModule {
       : new LoggingConfig();
 
     return {
-      module: FastifyLoggingModule,
+      module: PinoLoggingModule,
       global: true,
       providers: [
         // 提供配置实例
