@@ -6,6 +6,7 @@ import * as path from "path";
 import { AppController } from "./app.controller.js";
 import { AppConfig } from "./config/app.config.js";
 import { TenantConfigModule } from "./modules/tenant-config/tenant-config.module.js";
+import { CacheModule } from "./modules/cache/cache.module.js";
 
 /**
  * @description HL8 SAAS 平台应用的根模块，负责聚合配置能力与日志能力，确保上下游模块可获得统一的基础设施支持
@@ -131,6 +132,7 @@ import { TenantConfigModule } from "./modules/tenant-config/tenant-config.module
     setupClsModule(),
     // 业务模块：租户配置缓存接口
     TenantConfigModule,
+    CacheModule,
   ],
 })
 export class AppModule {}

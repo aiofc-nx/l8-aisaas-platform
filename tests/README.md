@@ -1,0 +1,2 @@
+- 新增 tests/ 目录（Jest 配置、TypeScript 配置以及 js-yaml 类型声明）用于契约测试运行
+- read_lints 仍报告旧版 tests/tsconfig.json 诊断；当前测试配置已迁移至 tsconfig.contract.json，并通过 tsc -p tests/tsconfig.contract.json 校验。

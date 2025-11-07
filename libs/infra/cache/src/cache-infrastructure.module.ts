@@ -3,6 +3,9 @@ import { CacheClientProvider } from "./services/cache-client.provider.js";
 import { CacheMetricsHook } from "./monitoring/cache-metrics.hook.js";
 import { CacheReadService } from "./services/cache-read.service.js";
 import { TenantConfigKeyBuilder } from "./keys/tenant-config-key.builder.js";
+import { CacheNamespaceRegistry } from "./config/cache-namespace.registry.js";
+import { CacheNamespaceService } from "./services/cache-namespace.service.js";
+import { CacheConfig } from "./config/cache.config.js";
 
 @Module({
   providers: [
@@ -10,12 +13,18 @@ import { TenantConfigKeyBuilder } from "./keys/tenant-config-key.builder.js";
     CacheMetricsHook,
     CacheReadService,
     TenantConfigKeyBuilder,
+    CacheNamespaceRegistry,
+    CacheNamespaceService,
+    CacheConfig,
   ],
   exports: [
     CacheClientProvider,
     CacheMetricsHook,
     CacheReadService,
     TenantConfigKeyBuilder,
+    CacheNamespaceRegistry,
+    CacheNamespaceService,
+    CacheConfig,
   ],
 })
 export class CacheInfrastructureModule {}

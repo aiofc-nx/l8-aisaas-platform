@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "types": ["jest", "node"],
+    "rootDir": "./",
+    "outDir": "./dist"
+  },
+  "include": ["contract/**/*.ts", "types/**/*.d.ts"],
+  "exclude": ["dist", "node_modules"]
+}

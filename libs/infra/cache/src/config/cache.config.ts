@@ -10,6 +10,7 @@ import {
 import { RedisClientConfig } from "./redis-client.config.js";
 import { RedisCommonConfig } from "./redis-common.config.js";
 import { RedisLockConfig } from "./redis-lock.config.js";
+import { CacheNamespacePolicyConfig } from "./cache-namespace-policy.config.js";
 
 /**
  * @description 缓存总体配置，聚合多客户端与锁配置。
@@ -58,4 +59,12 @@ export class CacheConfig {
   @Type(() => RedisLockConfig)
   @IsOptional()
   lock?: RedisLockConfig;
+
+  /**
+   * @description 命名空间策略配置集合，支持热加载与查询。
+   */
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CacheNamespacePolicyConfig)
+  namespacePolicies: CacheNamespacePolicyConfig[] = [];
 }

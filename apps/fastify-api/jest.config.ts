@@ -5,11 +5,8 @@ import { createRequire } from "node:module";
 const require = createRequire(import.meta.url);
 const workspaceRoot = path.resolve(process.cwd(), "..", "..");
 const libsRoot = path.resolve(workspaceRoot, "libs");
-const redlockEsmRoot = path.resolve(
-  path.dirname(require.resolve("@anchan828/nest-redlock/package.json")),
-  "dist",
-  "esm",
-);
+const redlockEsmEntry = require.resolve("@anchan828/nest-redlock");
+const redlockEsmRoot = path.dirname(redlockEsmEntry);
 const redlockEsmMapper = path.join(redlockEsmRoot, "$1").replace(/\\/g, "/");
 
 export default {

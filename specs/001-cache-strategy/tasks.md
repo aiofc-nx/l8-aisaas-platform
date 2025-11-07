@@ -45,9 +45,9 @@
 
 - [x] T012 [P] [US1] 在 `libs/infra/cache/src/keys/tenant-config-key.builder.ts` 实现租户配置键生成器（含中文 TSDoc、异常）
 - [x] T013 [P] [US1] 在 `libs/infra/cache/src/services/cache-read.service.ts` 实现命名空间读服务，调用 Redis 并记录中文日志
-- [ ] T014 [US1] 在 `apps/fastify-api/src/modules/tenant-config/tenant-config.service.ts` 接入 `CacheReadService`，缓存命中、回源逻辑与 CLS 上下文写入
-- [ ] T015 [US1] 在 `apps/fastify-api/src/modules/tenant-config/tenant-config.controller.ts` 使用缓存响应请求并返回中文错误
-- [ ] T016 [US1] 更新 `apps/fastify-api/src/app.module.ts` 注入 `CacheModule` 与命名空间配置
+- [x] T014 [US1] 在 `apps/fastify-api/src/modules/tenant-config/tenant-config.service.ts` 接入 `CacheReadService`，缓存命中、回源逻辑与 CLS 上下文写入
+- [x] T015 [US1] 在 `apps/fastify-api/src/modules/tenant-config/tenant-config.controller.ts` 使用缓存响应请求并返回中文错误
+- [x] T016 [US1] 更新 `apps/fastify-api/src/app.module.ts` 注入 `CacheModule` 与命名空间配置
 
 **Checkpoint**: 用户故事 1 功能自洽，可独立演示租户缓存命中
 
@@ -61,15 +61,15 @@
 
 ### Tests for User Story 2
 
-- [ ] T017 [P] [US2] 在 `tests/contract/cache/cache-management.contract.spec.ts` 编写契约测试对齐 `contracts/cache-management.openapi.yaml`
-- [ ] T018 [US2] 在 `apps/fastify-api/test/integration/cache/cache-namespace.controller.spec.ts` 编写集成测试覆盖配置缺失与成功场景
+- [x] T017 [P] [US2] 在 `tests/contract/cache/cache-management.contract.spec.ts` 编写契约测试对齐 `contracts/cache-management.openapi.yaml`
+- [x] T018 [US2] 在 `apps/fastify-api/test/integration/cache/cache-namespace.controller.spec.ts` 编写集成测试覆盖配置缺失与成功场景
 
 ### Implementation for User Story 2
 
-- [ ] T019 [P] [US2] 在 `libs/infra/cache/src/config/cache-namespace.registry.ts` 建立策略注册表与热加载监听
-- [ ] T020 [US2] 在 `libs/infra/cache/src/services/cache-namespace.service.ts` 实现策略查询、校验、中文异常
-- [ ] T021 [US2] 在 `apps/fastify-api/src/modules/cache/cache-namespace.controller.ts` 实现 `GET /internal/cache/namespaces`
-- [ ] T022 [US2] 在 `apps/fastify-api/src/modules/cache/cache.module.ts` 组合服务、控制器并注入到应用主模块
+- [x] T019 [P] [US2] 在 `libs/infra/cache/src/config/cache-namespace.registry.ts` 建立策略注册表与热加载监听
+- [x] T020 [US2] 在 `libs/infra/cache/src/services/cache-namespace.service.ts` 实现策略查询、校验、中文异常
+- [x] T021 [US2] 在 `apps/fastify-api/src/modules/cache/cache-namespace.controller.ts` 实现 `GET /internal/cache/namespaces`
+- [x] T022 [US2] 在 `apps/fastify-api/src/modules/cache/cache.module.ts` 组合服务、控制器并注入到应用主模块
 
 **Checkpoint**: 用户故事 2 实现，运维可查看配置并收到中文提示
 

@@ -10,4 +10,5 @@ export * from "./keys/tenant-config-key.builder.js";
 export * from "./monitoring/cache-metrics.hook.js";
 export * from "./services/cache-client.provider.js";
 export * from "./services/cache-read.service.js";
+export * from "./services/cache-namespace.service.js";
 export * from "./cache-infrastructure.module.js";
