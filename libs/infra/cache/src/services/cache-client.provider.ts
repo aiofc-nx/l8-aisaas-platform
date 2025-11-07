@@ -1,4 +1,4 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { Inject, Injectable, Optional } from "@nestjs/common";
 import { Logger } from "@hl8/logger";
 import {
   GeneralInternalServerException,
@@ -19,19 +19,41 @@ type LoggerWithChild = Logger & {
 @Injectable()
 export class CacheClientProvider {
   private readonly logger: Logger;
+  private readonly cacheConfig: CacheConfig;
+  private readonly redisClients: RedisClients;
 
   constructor(
     @Inject(REDIS_CLIENTS)
-    private readonly redisClients: RedisClients,
-    private readonly cacheConfig: CacheConfig,
+    @Optional()
+    redisClients: RedisClients | undefined,
+    @Optional()
+    cacheConfig: CacheConfig | undefined,
     logger: Logger,
   ) {
+    this.cacheConfig = cacheConfig ?? new CacheConfig();
     if (typeof (logger as LoggerWithChild).child === "function") {
       this.logger = (logger as LoggerWithChild).child({
         context: CacheClientProvider.name,
       });
     } else {
       this.logger = logger;
+    }
+
+    if (!redisClients) {
+      this.logger.warn("未注入 Redis 客户端令牌，使用内存缓存映射作为占位", {
+        domain: "tenant-config",
+      });
+      const fallbackClient = this.createFallbackRedisClient();
+      const fallbackClients: RedisClients = new Map();
+      const defaultKey =
+        this.cacheConfig.defaultClientKey ??
+        this.cacheConfig.clients?.[0]?.clientKey ??
+        this.cacheConfig.clients?.[0]?.namespace ??
+        "default";
+      fallbackClients.set(defaultKey, fallbackClient);
+      this.redisClients = fallbackClients;
+    } else {
+      this.redisClients = redisClients;
     }
   }
 
@@ -106,5 +128,45 @@ export class CacheClientProvider {
       );
     }
     return firstKey;
+  }
+
+  private createFallbackRedisClient(): Redis {
+    const store = new Map<string, string>();
+    const timers = new Map<string, NodeJS.Timeout>();
+
+    const client: Partial<Redis> = {
+      async get(key: string) {
+        return store.get(key) ?? null;
+      },
+      async set(
+        key: string,
+        value: string,
+        ...args: Array<unknown>
+      ): Promise<"OK"> {
+        store.set(key, value);
+
+        const [mode, ttl] = args;
+        if (mode === "EX" && typeof ttl === "number" && ttl > 0) {
+          const existingTimer = timers.get(key);
+          if (existingTimer) {
+            clearTimeout(existingTimer);
+            existingTimer.unref?.();
+            timers.delete(key);
+          }
+
+          const timeout = setTimeout(() => {
+            store.delete(key);
+            timers.delete(key);
+          }, ttl * 1000);
+
+          timeout.unref?.();
+          timers.set(key, timeout);
+        }
+
+        return "OK";
+      },
+    };
+
+    return client as Redis;
   }
 }

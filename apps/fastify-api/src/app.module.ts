@@ -1,9 +1,11 @@
 import { PinoLoggingModule } from "@hl8/logger";
 import { TypedConfigModule, dotenvLoader, directoryLoader } from "@hl8/config";
+import { setupClsModule } from "@hl8/async-storage";
 import { Module } from "@nestjs/common";
 import * as path from "path";
 import { AppController } from "./app.controller.js";
 import { AppConfig } from "./config/app.config.js";
+import { TenantConfigModule } from "./modules/tenant-config/tenant-config.module.js";
 
 /**
  * @description HL8 SAAS 平台应用的根模块，负责聚合配置能力与日志能力，确保上下游模块可获得统一的基础设施支持
@@ -125,6 +127,10 @@ import { AppConfig } from "./config/app.config.js";
         },
       },
     }),
+    // 全局异步上下文模块，供缓存与权限模块记录 CLS 信息
+    setupClsModule(),
+    // 业务模块：租户配置缓存接口
+    TenantConfigModule,
   ],
 })
 export class AppModule {}

@@ -1,5 +1,14 @@
 import { DynamicModule } from "@nestjs/common";
-import { RedlockModule } from "@anchan828/nest-redlock";
+import { createRequire } from "node:module";
+
+const require = createRequire(import.meta.url);
+type RedlockCjsExports = typeof import("@anchan828/nest-redlock");
+const redlockEsmEntryPath = require.resolve("@anchan828/nest-redlock");
+const redlockCjsEntryPath = redlockEsmEntryPath.replace(
+  /dist\/esm\/index\.js$/,
+  "dist/cjs/index.js",
+);
+const { RedlockModule } = require(redlockCjsEntryPath) as RedlockCjsExports;
 import { REDIS_CLIENTS } from "@liaoliaots/nestjs-redis/dist/redis/redis.constants.js";
 import type { RedisClients } from "@liaoliaots/nestjs-redis/dist/redis/interfaces/index.js";
 import {
