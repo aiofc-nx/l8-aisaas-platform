@@ -83,4 +83,8 @@
 
 ### Tests for User Story 3
 
-- [ ] T023 [P] [US3] 在 `
+- [x] T023 [P] [US3] 在 `tests/contract/cache/cache-consistency.contract.spec.ts` 编写契约测试覆盖写后延迟双删、失效通知和预取接口定义
+
+### Implementation for User Story 3
+
+- [x] T024 [US3] 在 `libs/infra/cache/src/services/cache-consistency.service.ts` 实现缓存一致性服务（持锁执行写前删除与延迟双删，并记录中文通知）

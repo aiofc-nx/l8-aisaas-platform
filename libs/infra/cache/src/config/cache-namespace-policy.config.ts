@@ -8,6 +8,7 @@ import {
   Max,
   Min,
 } from "class-validator";
+import { DEFAULT_CACHE_KEY_SEPARATOR } from "../constants/cache-defaults.js";
 
 /**
  * @description 缓存命名空间淘汰策略枚举，定义写路径默认行为。
@@ -52,7 +53,7 @@ export class CacheNamespacePolicyConfig {
    */
   @IsString()
   @IsOptional()
-  separator: string = ":";
+  separator: string = DEFAULT_CACHE_KEY_SEPARATOR;
 
   /**
    * @description 默认缓存 TTL（秒），必须为正整数。

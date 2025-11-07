@@ -1,3 +1,8 @@
+import path from "node:path";
+import { createRequire } from "node:module";
+
+const require = createRequire(path.resolve(process.cwd(), "package.json"));
+
 export default {
   displayName: "@hl8/config",
   preset: "ts-jest/presets/default-esm",
@@ -6,7 +11,11 @@ export default {
   extensionsToTreatAsEsm: [".ts"],
   moduleNameMapper: {
     "^(\\.{1,2}/.*)\\.js$": "$1",
+    "^@anchan828/nest-redlock$": "<rootDir>/src/testing/redlock.mock.ts",
   },
+  transformIgnorePatterns: [
+    "node_modules/(?!(@anchan828/nest-redlock|redlock)/)",
+  ],
   transform: {
     "^.+\\.ts$": [
       "ts-jest",

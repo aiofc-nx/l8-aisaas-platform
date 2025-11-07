@@ -1,5 +1,10 @@
 import { Inject, Injectable } from "@nestjs/common";
-import { CacheReadService, TenantConfigKeyBuilder } from "@hl8/cache";
+import {
+  CacheReadService,
+  TenantConfigKeyBuilder,
+  TENANT_CONFIG_CACHE_DOMAIN,
+  TENANT_CONFIG_CACHE_TTL_SECONDS,
+} from "@hl8/cache";
 import { GeneralBadRequestException } from "@hl8/exceptions";
 import { ClsService } from "nestjs-cls";
 import {
@@ -7,9 +12,6 @@ import {
   type TenantConfigurationDataSource,
   type TenantConfigurationRecord,
 } from "./tenant-config.types.js";
-
-const CACHE_DOMAIN = "tenant-config";
-const CACHE_TTL_SECONDS = 300;
 
 const CLS_TENANT_CACHE_CONTEXT = "cache.tenantConfig";
 
@@ -51,15 +53,15 @@ export class TenantConfigService {
     this.clsService.set(CLS_TENANT_CACHE_CONTEXT, {
       tenantId: normalizedTenantId,
       cacheKey,
-      domain: CACHE_DOMAIN,
-      ttlSeconds: CACHE_TTL_SECONDS,
+      domain: TENANT_CONFIG_CACHE_DOMAIN,
+      ttlSeconds: TENANT_CONFIG_CACHE_TTL_SECONDS,
     });
 
     return this.cacheReadService.getOrLoad<TenantConfigurationRecord>({
-      domain: CACHE_DOMAIN,
+      domain: TENANT_CONFIG_CACHE_DOMAIN,
       key: cacheKey,
       tenantId: normalizedTenantId,
-      ttlSeconds: CACHE_TTL_SECONDS,
+      ttlSeconds: TENANT_CONFIG_CACHE_TTL_SECONDS,
       loader: () =>
         this.dataSource.fetchTenantConfiguration(normalizedTenantId),
     });

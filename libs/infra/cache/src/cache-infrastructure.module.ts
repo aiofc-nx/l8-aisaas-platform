@@ -5,6 +5,7 @@ import { CacheReadService } from "./services/cache-read.service.js";
 import { TenantConfigKeyBuilder } from "./keys/tenant-config-key.builder.js";
 import { CacheNamespaceRegistry } from "./config/cache-namespace.registry.js";
 import { CacheNamespaceService } from "./services/cache-namespace.service.js";
+import { CacheConsistencyService } from "./services/cache-consistency.service.js";
 import { CacheConfig } from "./config/cache.config.js";
 
 @Module({
@@ -15,6 +16,7 @@ import { CacheConfig } from "./config/cache.config.js";
     TenantConfigKeyBuilder,
     CacheNamespaceRegistry,
     CacheNamespaceService,
+    CacheConsistencyService,
     CacheConfig,
   ],
   exports: [
@@ -24,6 +26,7 @@ import { CacheConfig } from "./config/cache.config.js";
     TenantConfigKeyBuilder,
     CacheNamespaceRegistry,
     CacheNamespaceService,
+    CacheConsistencyService,
     CacheConfig,
   ],
 })

@@ -10,6 +10,9 @@ import {
   CacheNamespaceRegistry,
   CacheNamespaceService,
   RedisClientConfig,
+  DEFAULT_CACHE_KEY_SEPARATOR,
+  TENANT_CONFIG_CACHE_DOMAIN,
+  TENANT_CONFIG_CACHE_TTL_SECONDS,
 } from "@hl8/cache";
 import { Logger } from "@hl8/logger";
 import { CacheNamespaceController } from "../../../src/modules/cache/cache-namespace.controller.js";
@@ -30,16 +33,15 @@ describe("CacheNamespaceController (integration)", () => {
     const config = new CacheConfig();
     const clientConfig = new RedisClientConfig();
     clientConfig.clientKey = "default";
-    clientConfig.namespace = "tenant-config";
+    clientConfig.namespace = TENANT_CONFIG_CACHE_DOMAIN;
 
     config.clients = [clientConfig];
     config.defaultClientKey = "default";
     const policy = new CacheNamespacePolicyConfig();
-    policy.domain = "tenant-config";
+    policy.domain = TENANT_CONFIG_CACHE_DOMAIN;
     policy.keyPrefix = "tc";
     policy.keySuffix = null;
-    policy.separator = ":";
-    policy.defaultTTL = 300;
+    policy.defaultTTL = TENANT_CONFIG_CACHE_TTL_SECONDS;
     policy.evictionPolicy = CacheEvictionPolicy.DoubleDelete;
     policy.hitThresholdAlert = 0.8;
     config.namespacePolicies = [policy];
@@ -80,10 +82,10 @@ describe("CacheNamespaceController (integration)", () => {
         expect(Array.isArray(body.data)).toBe(true);
         expect(body.data).toHaveLength(1);
         expect(body.data[0]).toMatchObject({
-          domain: "tenant-config",
+          domain: TENANT_CONFIG_CACHE_DOMAIN,
           keyPrefix: "tc",
-          separator: ":",
-          defaultTTL: 300,
+          separator: DEFAULT_CACHE_KEY_SEPARATOR,
+          defaultTTL: TENANT_CONFIG_CACHE_TTL_SECONDS,
           evictionPolicy: "double-delete",
         });
       });

@@ -2,7 +2,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createRequire } from "node:module";
 
-const require = createRequire(import.meta.url);
+const require = createRequire(path.resolve(process.cwd(), "package.json"));
 const workspaceRoot = path.resolve(process.cwd(), "..", "..");
 const libsRoot = path.resolve(workspaceRoot, "libs");
 const redlockEsmEntry = require.resolve("@anchan828/nest-redlock");

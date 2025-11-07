@@ -11,4 +11,6 @@ export * from "./monitoring/cache-metrics.hook.js";
 export * from "./services/cache-client.provider.js";
 export * from "./services/cache-read.service.js";
 export * from "./services/cache-namespace.service.js";
+export * from "./services/cache-consistency.service.js";
+export * from "./constants/cache-defaults.js";
 export * from "./cache-infrastructure.module.js";

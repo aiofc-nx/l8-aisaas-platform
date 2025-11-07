@@ -8,9 +8,10 @@ import type { Redis } from "ioredis";
 import { performance } from "node:perf_hooks";
 import { CacheClientProvider } from "./cache-client.provider.js";
 import { CacheMetricsHook } from "../monitoring/cache-metrics.hook.js";
-
-const DEFAULT_SERIALIZE = <T>(value: T): string => JSON.stringify(value);
-const DEFAULT_DESERIALIZE = <T>(value: string): T => JSON.parse(value) as T;
+import {
+  deserializeFromJson,
+  serializeToJson,
+} from "../constants/cache-defaults.js";
 
 type LoggerWithOptionalChild = Logger & {
   child?: (context: Record<string, unknown>) => Logger;
@@ -63,8 +64,8 @@ export class CacheReadService {
       tenantId,
       loader,
       ttlSeconds,
-      serialize = DEFAULT_SERIALIZE,
-      deserialize = DEFAULT_DESERIALIZE,
+      serialize = serializeToJson,
+      deserialize = deserializeFromJson,
     } = options;
 
     const redisClient = this.getRedisClient(clientKey);

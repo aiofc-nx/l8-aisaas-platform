@@ -1,2 +1,3 @@
-- 新增 tests/ 目录（Jest 配置、TypeScript 配置以及 js-yaml 类型声明）用于契约测试运行
-- read_lints 仍报告旧版 tests/tsconfig.json 诊断；当前测试配置已迁移至 tsconfig.contract.json，并通过 tsc -p tests/tsconfig.contract.json 校验。
+- `tests/` 目录用于缓存相关契约测试，包含独立的 Jest 配置、TypeScript 配置以及 `js-yaml` 类型声明。
+- `tests/contract/cache/cache-management.contract.spec.ts` 与 `cache-consistency.contract.spec.ts` 分别覆盖命名空间与写路径相关的 OpenAPI 契约。
+- 通过 `pnpm exec jest --config tests/jest.config.ts` 或 `tsc -p tests/tsconfig.contract.json` 可独立校验契约定义。

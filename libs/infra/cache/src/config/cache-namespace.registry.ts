@@ -5,6 +5,7 @@ import {
   CacheEvictionPolicy,
   CacheNamespacePolicyConfig,
 } from "./cache-namespace-policy.config.js";
+import { DEFAULT_CACHE_KEY_SEPARATOR } from "../constants/cache-defaults.js";
 
 /**
  * @description 命名空间策略投影定义，供业务查询与序列化使用。
@@ -110,7 +111,7 @@ export class CacheNamespaceRegistry {
       domain: policy.domain,
       keyPrefix: policy.keyPrefix,
       keySuffix: policy.keySuffix ?? null,
-      separator: policy.separator ?? ":",
+      separator: policy.separator ?? DEFAULT_CACHE_KEY_SEPARATOR,
       defaultTTL: policy.defaultTTL,
       evictionPolicy: policy.evictionPolicy,
       hitThresholdAlert: policy.hitThresholdAlert ?? null,
