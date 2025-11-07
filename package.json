@@ -1,0 +1,58 @@
+{
+  "name": "hl8-platform",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "clean": "turbo clean",
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "test": "turbo test",
+    "test:e2e": "turbo test:e2e",
+    "lint": "turbo lint",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "prepare": "husky || true",
+    "libs:fix": "pnpm dlx sherif@latest --fix"
+  },
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog"
+    }
+  },
+  "lint-staged": {
+    "*.ts": [
+      "eslint \"libs/**/*.ts\" \"packages/**/*.ts\" \"apps/**/*.ts\" --fix"
+    ]
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.29.7",
+    "@commitlint/cli": "^20.1.0",
+    "@commitlint/config-conventional": "^20.0.0",
+    "@types/jest": "^30.0.0",
+    "@types/node": "24.10.0",
+    "commitizen": "^4.3.1",
+    "cz-conventional-changelog": "^3.3.0",
+    "eslint": "9.39.1",
+    "husky": "^9.1.7",
+    "jest": "^30.2.0",
+    "lint-staged": "^16.0.0",
+    "mongodb-memory-server": "^10.3.0",
+    "prettier": "^3.6.2",
+    "prettier-plugin-css-order": "^2.1.2",
+    "prettier-plugin-organize-imports": "^4.1.0",
+    "prettier-plugin-packagejson": "^2.5.6",
+    "prettier-plugin-tailwindcss": "^0.6.9",
+    "ts-jest": "^29.4.5",
+    "turbo": "^2.5.8",
+    "typescript": "^5.9.3"
+  },
+  "packageManager": "pnpm@10.11.0",
+  "pnpm": {
+    "overrides": {
+      "fastify": "5.4.0",
+      "minimatch": "10.0.3"
+    }
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
