@@ -1,0 +1,31 @@
+# l8-aisaas-platform Development Guidelines
+
+> **注意**：本文件及引用的所有手册内容必须使用中文撰写，并与项目章程保持一致。
+
+Auto-generated from all feature plans. Last updated: 2025-11-07
+
+## Active Technologies
+
+- TypeScript (Node.js ≥20, NodeNext 模块系统) + `@hl8/config`, `@hl8/logger`, `@songkeys/nestjs-redis`, `@anchan828/nest-redlock`, `ioredis`, `class-validator`, `nestjs-cls` (001-cache-strategy)
+
+## Project Structure
+
+```text
+src/
+tests/
+```
+
+## Commands
+
+npm test && npm run lint
+
+## Code Style
+
+TypeScript (Node.js ≥20, NodeNext 模块系统): Follow standard conventions
+
+## Recent Changes
+
+- 001-cache-strategy: Added TypeScript (Node.js ≥20, NodeNext 模块系统) + `@hl8/config`, `@hl8/logger`, `@songkeys/nestjs-redis`, `@anchan828/nest-redlock`, `ioredis`, `class-validator`, `nestjs-cls`
+
+<!-- MANUAL ADDITIONS START -->
+<!-- MANUAL ADDITIONS END -->
