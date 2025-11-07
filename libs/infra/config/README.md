@@ -21,6 +21,7 @@
 - ✅ **使用者必须遵循技术规范** - 使用 TypeScript 类和装饰器，遵循 class-validator 规范
 
 **`@hl8/config` 的职责**：
+
 - ✅ **读取配置文件** - 从文件系统、环境变量、远程服务等加载配置
 - ✅ **配置验证** - 使用 class-validator 验证配置完整性（基于使用者定义的规则）
 - ✅ **配置合并** - 深度合并多个配置源
@@ -28,6 +29,7 @@
 - ✅ **配置缓存** - 内置缓存机制，提升性能
 
 **使用者的职责**：
+
 - ✅ **定义配置类** - 使用 TypeScript 类和装饰器定义配置结构
 - ✅ **定义验证规则** - 使用 class-validator 装饰器定义验证规则
 - ✅ **遵循技术规范** - 遵循 TypeScript 类和 class-validator 的技术规范
@@ -40,7 +42,7 @@
 export class AppConfig {
   @IsString()
   public readonly name!: string;
-  
+
   @IsNumber()
   @Type(() => Number)
   public readonly port!: number;
@@ -48,12 +50,12 @@ export class AppConfig {
 
 // @hl8/config 负责读取和验证（基础设施层）
 TypedConfigModule.forRoot({
-  schema: AppConfig,  // 使用者定义的配置类
+  schema: AppConfig, // 使用者定义的配置类
   load: [
-    fileLoader({ path: './config/app.yml' }),  // @hl8/config 读取配置文件
-    dotenvLoader(),  // @hl8/config 读取环境变量
+    fileLoader({ path: "./config/app.yml" }), // @hl8/config 读取配置文件
+    dotenvLoader(), // @hl8/config 读取环境变量
   ],
-})
+});
 ```
 
 ### 本模块的缓存功能
@@ -206,21 +208,23 @@ TypedConfigModule.forRoot({
 ```typescript
 load: [
   // 1. 配置文件（优先）
-  directoryLoader({ directory: './config' }),
+  directoryLoader({ directory: "./config" }),
   // 2. 远程配置（如果需要）
   // remoteLoader('https://config-server.com/api/config'),
   // 3. 环境变量（作为 fallback）
-  dotenvLoader({ separator: '__', ignoreEnvFile: true }),
-]
+  dotenvLoader({ separator: "__", ignoreEnvFile: true }),
+];
 ```
 
 **加载优先级**（从高到低）：
+
 1. **配置文件**（JSON/YAML）- 优先加载，目录不存在时返回空对象
 2. **远程配置源** - 如果配置了远程配置服务
 3. **进程环境变量** - 作为最后的 fallback
 4. **.env 文件** - 仅在无法获得其他配置源时使用
 
 **重要提示**：
+
 - 配置文件不存在时不会报错，会继续尝试其他配置源
 - `.env` 文件不存在时静默忽略，不会影响应用启动
 
@@ -258,6 +262,7 @@ dotenvLoader({
 ```
 
 **加载策略**：
+
 - `.env` 文件不存在时静默忽略，不会报错
 - 推荐配置：优先使用配置文件，`.env` 文件作为最后的 fallback
 - 如果 `ignoreEnvFile: true`，只使用进程环境变量，不加载 `.env` 文件
@@ -303,6 +308,7 @@ directoryLoader({
 ```
 
 **重要提示**：
+
 - 如果目录不存在，返回空对象而不是抛出错误
 - 这样可以让其他配置源（如远程配置、环境变量）作为 fallback
 
@@ -320,19 +326,20 @@ import { IsString, IsNotEmpty, IsNumber, Min, Max } from "class-validator";
 import { Type } from "class-transformer";
 
 export class ServerConfig {
-  @IsString()  // 验证规则：必须是字符串（使用者定义）
-  @IsNotEmpty()  // 验证规则：不能为空（使用者定义）
+  @IsString() // 验证规则：必须是字符串（使用者定义）
+  @IsNotEmpty() // 验证规则：不能为空（使用者定义）
   public readonly host!: string;
 
-  @IsNumber()  // 验证规则：必须是数字（使用者定义）
-  @Min(1)  // 验证规则：最小值 1（使用者定义）
-  @Max(65535)  // 验证规则：最大值 65535（使用者定义）
-  @Type(() => Number)  // 类型转换：字符串转数字
+  @IsNumber() // 验证规则：必须是数字（使用者定义）
+  @Min(1) // 验证规则：最小值 1（使用者定义）
+  @Max(65535) // 验证规则：最大值 65535（使用者定义）
+  @Type(() => Number) // 类型转换：字符串转数字
   public readonly port!: number;
 }
 ```
 
 **技术规范**：
+
 - 使用 class-validator 装饰器定义验证规则
 - 使用 class-transformer 装饰器进行类型转换
 - 参考 [class-validator 官方文档](https://github.com/typestack/class-validator)
@@ -408,11 +415,11 @@ TypedConfigModule.forRootAsync({
 
 #### 缓存策略
 
-| 策略 | 说明 | 适用场景 | 性能 |
-|------|------|----------|------|
-| **memory** | 内存缓存 | 开发环境、单进程应用 | ⚡⚡⚡ 最快 |
-| **file** | 文件缓存 | 需要跨进程共享、持久化 | ⚡⚡ 较快 |
-| **none** | 无缓存 | 配置频繁变化、调试环境 | ⚡ 每次重新加载 |
+| 策略       | 说明     | 适用场景               | 性能            |
+| ---------- | -------- | ---------------------- | --------------- |
+| **memory** | 内存缓存 | 开发环境、单进程应用   | ⚡⚡⚡ 最快     |
+| **file**   | 文件缓存 | 需要跨进程共享、持久化 | ⚡⚡ 较快       |
+| **none**   | 无缓存   | 配置频繁变化、调试环境 | ⚡ 每次重新加载 |
 
 #### 缓存特性
 
@@ -432,18 +439,17 @@ TypedConfigModule.forRootAsync({
 ```typescript
 TypedConfigModule.forRootAsync({
   schema: AppConfig,
-  load: [
-    remoteLoader("https://config-server.com/api/config"),
-  ],
+  load: [remoteLoader("https://config-server.com/api/config")],
   cache: {
     enabled: true,
     strategy: "memory",
-    ttl: 3600000,  // 缓存1小时，减少网络请求
+    ttl: 3600000, // 缓存1小时，减少网络请求
   },
 });
 ```
 
 **优势**：
+
 - 减少网络请求，提升性能
 - 降低远程配置服务负载
 - 网络故障时仍可使用缓存配置
@@ -455,19 +461,18 @@ TypedConfigModule.forRootAsync({
 ```typescript
 TypedConfigModule.forRoot({
   schema: AppConfig,
-  load: [
-    directoryLoader({ directory: "./config" }),
-  ],
+  load: [directoryLoader({ directory: "./config" })],
   cache: {
     enabled: true,
-    strategy: "file",  // 文件缓存，可跨进程共享
+    strategy: "file", // 文件缓存，可跨进程共享
     cacheDir: "./cache",
-    ttl: 1800000,  // 30分钟
+    ttl: 1800000, // 30分钟
   },
 });
 ```
 
 **优势**：
+
 - 避免重复解析 JSON/YAML 文件
 - 避免重复验证配置
 - 跨进程共享缓存
@@ -483,12 +488,13 @@ TypedConfigModule.forRoot({
   cache: {
     enabled: process.env.NODE_ENV !== "development",
     strategy: "memory",
-    ttl: 60000,  // 开发环境：1分钟（快速刷新）
+    ttl: 60000, // 开发环境：1分钟（快速刷新）
   },
 });
 ```
 
 **优势**：
+
 - 开发时快速刷新配置
 - 生产环境使用较长 TTL 提升性能
 
@@ -502,7 +508,7 @@ TypedConfigModule.forRoot({
   cache: {
     enabled: true,
     strategy: "memory",
-    ttl: 3600000,  // 1小时
+    ttl: 3600000, // 1小时
   },
 });
 ```
@@ -515,7 +521,7 @@ TypedConfigModule.forRoot({
   cache: {
     enabled: true,
     strategy: "file",
-    cacheDir: "./cache",  // 缓存目录
+    cacheDir: "./cache", // 缓存目录
     ttl: 3600000,
   },
 });
@@ -527,7 +533,7 @@ TypedConfigModule.forRoot({
 TypedConfigModule.forRoot({
   schema: AppConfig,
   cache: {
-    enabled: false,  // 或 strategy: "none"
+    enabled: false, // 或 strategy: "none"
   },
 });
 ```
@@ -601,15 +607,15 @@ console.log(`最常访问的键:`, stats.topKeys);
 
 **统计信息说明**：
 
-| 字段 | 说明 |
-|------|------|
-| `totalEntries` | 总缓存条目数 |
-| `hits` | 缓存命中次数 |
-| `misses` | 缓存未命中次数 |
-| `hitRate` | 缓存命中率（0-100） |
-| `totalSize` | 总缓存大小（字节） |
+| 字段                | 说明                 |
+| ------------------- | -------------------- |
+| `totalEntries`      | 总缓存条目数         |
+| `hits`              | 缓存命中次数         |
+| `misses`            | 缓存未命中次数       |
+| `hitRate`           | 缓存命中率（0-100）  |
+| `totalSize`         | 总缓存大小（字节）   |
 | `averageAccessTime` | 平均访问时间（毫秒） |
-| `topKeys` | 最常访问的键列表 |
+| `topKeys`           | 最常访问的键列表     |
 
 ### 注意事项
 
