@@ -48,63 +48,98 @@
 
 import { Type } from "class-transformer";
 import {
-  IsBoolean,
   IsIn,
   IsNumber,
   IsOptional,
   IsString,
-  IsUrl,
   ValidateNested,
 } from "class-validator";
 
 // 从 @hl8/logger 导入日志配置类（单一配置源）
 import { LoggingConfig } from "@hl8/logger";
+import {
+  SwaggerConfig as BaseSwaggerConfig,
+  SwaggerServer,
+} from "@hl8/swagger";
 
 /**
  * Swagger 配置
  *
  * @description Swagger API 文档相关配置
  */
-export class SwaggerConfig {
+export class SwaggerConfig extends BaseSwaggerConfig {
   /**
-   * 是否启用 Swagger
-   *
-   * @default true
+   * @description 是否启用 Swagger 文档
    */
-  @IsBoolean()
-  @Type(() => Boolean)
-  @IsOptional()
-  public readonly enabled: boolean = true;
+  enabled = true;
 
   /**
-   * API 服务器 URL（开发环境）
-   *
-   * @default 'http://localhost:3001'
+   * @description Swagger UI 默认访问路径
    */
-  @IsString()
-  @IsUrl({ require_protocol: false, require_tld: false })
-  @IsOptional()
-  public readonly serverUrl: string = "http://localhost:3001";
+  swaggerPath = "api-docs";
 
   /**
-   * API 服务器 URL（预发布环境）
-   *
-   * @default 'https://staging-api.hl8.com'
+   * @description API 文档标题
    */
-  @IsString()
-  @IsUrl({ require_protocol: true })
-  @IsOptional()
-  public readonly stagingUrl: string = "https://staging-api.hl8.com";
+  title = "HL8 SAAS Platform API";
 
   /**
-   * API 服务器 URL（生产环境）
-   *
-   * @default 'https://api.hl8.com'
+   * @description 文档详细描述
    */
-  @IsString()
-  @IsUrl({ require_protocol: true })
-  @IsOptional()
-  public readonly productionUrl: string = "https://api.hl8.com";
+  description =
+    "🚀 HL8 SAAS 平台企业级 RESTful API\n\n" +
+    "## 特性\n" +
+    "- 🔐 基于 JWT 的认证和授权\n" +
+    "- 🏢 多租户数据隔离\n" +
+    "- 📊 完整的 CRUD 操作\n" +
+    "- ⚡ 高性能缓存\n" +
+    "- 🛡️ 安全防护和限流\n" +
+    "- 📝 标准化错误响应（RFC7807）\n\n" +
+    "## 认证\n" +
+    "大部分 API 需要 Bearer Token 认证。\n" +
+    '点击右上角 "Authorize" 按钮输入您的 Token。';
+
+  /**
+   * @description 文档版本号
+   */
+  version = "1.0.0";
+
+  /**
+   * @description 联系人名称
+   */
+  contactName = "HL8 SAAS Platform Team";
+
+  /**
+   * @description 联系人邮箱
+   */
+  contactEmail = "support@hl8.com";
+
+  /**
+   * @description 联系人官网链接
+   */
+  contactUrl = "https://github.com/your-org/hl8-saas-platform";
+
+  /**
+   * @description 公开的服务器列表
+   */
+  servers: SwaggerServer[] = [
+    SwaggerConfig.createServer("http://localhost:3001", "Development Server"),
+    SwaggerConfig.createServer("https://staging-api.hl8.com", "Staging Server"),
+    SwaggerConfig.createServer("https://api.hl8.com", "Production Server"),
+  ];
+
+  /**
+   * @description 创建 SwaggerServer 实例，确保通过 class-validator 校验
+   * @param url 服务器访问地址
+   * @param description 服务器描述信息
+   * @returns SwaggerServer 实例
+   */
+  private static createServer(url: string, description: string): SwaggerServer {
+    const server = new SwaggerServer();
+    server.url = url;
+    server.description = description;
+    return server;
+  }
 }
 
 /**

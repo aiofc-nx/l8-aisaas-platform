@@ -22,11 +22,7 @@ pnpm add @hl8/swagger
 ```typescript
 import { NestFactory } from "@nestjs/core";
 import type { INestApplication } from "@nestjs/common";
-import {
-  setupSwagger,
-  SwaggerConfig,
-  SetupSwaggerOptions,
-} from "@hl8/swagger";
+import { setupSwagger, SwaggerConfig, SetupSwaggerOptions } from "@hl8/swagger";
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
@@ -56,13 +52,9 @@ await bootstrapFastifyApplication(app, {
   config,
   swagger: {
     config: config.swagger,
-    configureBuilder: (builder) =>
-      builder
-        .addTag("健康检查", "系统健康监控")
-        .addBearerAuth(),
+    configureBuilder: (builder) => builder.addTag("健康检查", "系统健康监控").addBearerAuth(),
     documentOptions: {
-      operationIdFactory: (controllerKey, methodKey) =>
-        `${controllerKey}_${methodKey}`,
+      operationIdFactory: (controllerKey, methodKey) => `${controllerKey}_${methodKey}`,
     },
     setupOptions: {
       swaggerOptions: {

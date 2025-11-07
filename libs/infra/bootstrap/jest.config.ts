@@ -1,5 +1,5 @@
 export default {
-  displayName: "@hl8/config",
+  displayName: "@hl8/bootstrap",
   preset: "ts-jest/presets/default-esm",
   testEnvironment: "node",
   rootDir: ".",

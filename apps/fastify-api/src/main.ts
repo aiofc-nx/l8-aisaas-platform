@@ -1,79 +1,91 @@
-import { createFastifyLoggerConfig } from "@hl8/logger";
-import { NestFactory } from "@nestjs/core";
 import {
-  FastifyAdapter,
-  NestFastifyApplication,
-} from "@nestjs/platform-fastify";
+  bootstrapFastifyApplication,
+  createFastifyApplication,
+} from "@hl8/bootstrap";
+import { Logger } from "@hl8/logger";
 import { AppModule } from "./app.module.js";
-import { bootstrap } from "./bootstrap.js";
-import { setupSwagger } from "./swagger.js";
+import { AppConfig } from "./config/app.config.js";
 
 /**
- * @description 应用启动入口：负责创建 Fastify 适配器、初始化 NestJS 应用并接入 @hl8/logger
- * @returns Promise<void> 应用启动完成后返回
- * @throws Error 当创建应用或启动过程发生异常时抛出错误
+ * @description 应用启动入口：创建应用、初始化 Swagger 并执行引导流程
+ * @returns Promise<void>
+ * @throws Error 当启动过程中出现不可恢复异常时抛出
  * @example
  * ```typescript
- * main().catch((error) => {
- *   console.error("启动失败", error);
- *   process.exit(1);
- * });
+ * await main();
  * ```
  */
 const main = async (): Promise<void> => {
   try {
     console.log("[Main] 开始初始化应用...");
-    // 注意：在模块创建之前，无法使用 AppConfig 注入配置
-    // 这里使用 process.env 作为初始化配置，实际配置会在模块创建后通过 AppConfig 统一管理
-    // 这些值会被配置文件和环境变量覆盖（通过 dotenvLoader）
-    const nodeEnv = process.env.NODE_ENV || "development";
-    const logLevel =
-      process.env.LOG_LEVEL || process.env.LOGGING__LEVEL || "info";
-    const isDevelopment = nodeEnv === "development";
-
-    console.log("[Main] 创建 Fastify 适配器...");
-    const adapter = new FastifyAdapter({
-      logger: (() => {
-        if (isDevelopment) {
-          return createFastifyLoggerConfig({
-            level: logLevel,
-            prettyPrint: true,
-            colorize: true,
-            translateTime: "SYS:standard",
-            ignore: "pid,hostname",
-          });
-        }
-
-        return createFastifyLoggerConfig({
-          level: logLevel,
-          prettyPrint: false,
-        });
-      })(),
-      trustProxy: true,
+    const { app, config } = await createFastifyApplication({
+      module: AppModule,
+      appConfigToken: AppConfig,
+      loggerToken: Logger,
+      loggerChildContext: { module: "Bootstrap" },
     });
 
-    console.log("[Main] 创建 NestJS 应用实例...");
-    const app = await NestFactory.create<NestFastifyApplication>(
-      AppModule,
-      adapter,
-      {
-        // 禁用 NestJS 内置日志，使用 PinoLoggingModule 的日志
-        logger: false,
-      },
-    ).catch((error) => {
-      console.error("[Main] NestFactory.create 失败:", error);
-      throw error;
-    });
+    if (!config) {
+      throw new Error("[Main] 未能加载应用配置 AppConfig，无法继续启动");
+    }
 
-    // 启用关闭钩子，确保在应用关闭时正确清理资源
-    app.enableShutdownHooks();
-
-    console.log("[Main] 设置 Swagger API 文档...");
-    // 设置 Swagger API 文档
-    await setupSwagger(app);
+    console.log("[Main] 配置 Swagger API 文档...");
 
     console.log("[Main] 启动应用...");
-    await bootstrap(app);
+    await bootstrapFastifyApplication(app, {
+      config,
+      swagger: {
+        config: config.swagger,
+        configureBuilder: (builder) =>
+          builder
+            .setLicense("MIT", "https://opensource.org/licenses/MIT")
+            .addBearerAuth(
+              {
+                type: "http",
+                scheme: "bearer",
+                bearerFormat: "JWT",
+                name: "JWT",
+                description: "请输入有效的 JWT Token",
+                in: "header",
+              },
+              "JWT-auth",
+            )
+            .addTag("健康检查", "系统健康状态与性能指标")
+            .addTag("认证", "用户认证与授权接口")
+            .addTag("用户管理", "用户 CRUD 操作")
+            .addTag("租户管理", "租户配置与管理")
+            .addTag("组织管理", "组织架构相关接口"),
+        documentOptions: {
+          operationIdFactory: (controllerKey: string, methodKey: string) =>
+            `${controllerKey}_${methodKey}`,
+        },
+        setupOptions: {
+          customSiteTitle: "HL8 SAAS Platform API 文档",
+          customfavIcon: "/favicon.ico",
+          customCss: `
+            .swagger-ui .topbar { display: none }
+            .swagger-ui .info .title { color: #1890ff; }
+          `,
+          swaggerOptions: {
+            persistAuthorization: true,
+            displayRequestDuration: true,
+            filter: true,
+            showExtensions: true,
+            showCommonExtensions: true,
+            tryItOutEnabled: true,
+          },
+        },
+        onDocumentCreated: () => {
+          console.log("📚 Swagger documentation is available at:");
+          console.log(
+            `   📖 UI: http://${config.HOST}:${config.PORT}/${config.swagger.swaggerPath}`,
+          );
+          console.log(
+            `   📄 JSON: http://${config.HOST}:${config.PORT}/${config.swagger.swaggerPath}-json`,
+          );
+        },
+      },
+    });
     console.log("[Main] 应用启动完成");
   } catch (error) {
     console.error("[Main] 应用启动过程中发生错误:", error);

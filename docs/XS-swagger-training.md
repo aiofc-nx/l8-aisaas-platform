@@ -58,10 +58,7 @@ export class SwaggerConfig extends BaseSwaggerConfig {
   contactName = "平台团队";
   contactEmail = "support@hl8.com";
   contactUrl = "https://hl8.com";
-  servers = [
-    SwaggerConfig.createServer("http://localhost:3000", "Development"),
-    SwaggerConfig.createServer("https://api.hl8.com", "Production"),
-  ];
+  servers = [SwaggerConfig.createServer("http://localhost:3000", "Development"), SwaggerConfig.createServer("https://api.hl8.com", "Production")];
 }
 ```
 
@@ -160,11 +157,11 @@ swagger: {
 
 ### 6.3 常见问题排查
 
-| 问题表现 | 排查步骤 |
-| --- | --- |
-| 启动时报 `SwaggerConfig` 校验失败 | 检查是否使用 `SwaggerServer` 实例；确认字符串布尔配置是否能被转换 |
-| 访问 `/api-docs` 返回 404 | 确认 `swaggerPath` 与 `appPrefix` 拼接结果；检查应用启动日志是否提示已启用 |
-| 自定义 UI 没生效 | 确认 `customCss`、`customSiteTitle` 是否传递；检查浏览器缓存 |
+| 问题表现                          | 排查步骤                                                                   |
+| --------------------------------- | -------------------------------------------------------------------------- |
+| 启动时报 `SwaggerConfig` 校验失败 | 检查是否使用 `SwaggerServer` 实例；确认字符串布尔配置是否能被转换          |
+| 访问 `/api-docs` 返回 404         | 确认 `swaggerPath` 与 `appPrefix` 拼接结果；检查应用启动日志是否提示已启用 |
+| 自定义 UI 没生效                  | 确认 `customCss`、`customSiteTitle` 是否传递；检查浏览器缓存               |
 
 ## 7. 练习与考核
 
@@ -174,4 +171,3 @@ swagger: {
 4. 扩展 `onDocumentCreated`，在日志中输出 JSON 文档下载地址
 
 通过以上练习，开发者应能自信地在项目中使用 `@hl8/swagger`，并根据业务需求进行扩展。
-
