@@ -1,6 +1,7 @@
 # Data Model: 多层缓存架构方案
 
 ## 1. CacheConfigurationProfile
+
 - **描述**：表示一个部署环境的缓存整体参数集合。
 - **字段**：
   - `environmentKey` (string) — 环境标识，例如 `prod-cn`，需全局唯一。
@@ -16,6 +17,7 @@
   - 关联多个 `CacheNamespacePolicy`（按业务域划分）。
 
 ## 2. RedisClientConfig
+
 - **描述**：单个 Redis 实例或节点的连接信息。
 - **字段**：
   - `url` (string | null) — 连接 URI，与 host/port 二选一。
@@ -31,6 +33,7 @@
   - 字段必须通过 `class-validator` 校验，错误信息使用中文。
 
 ## 3. RedisLockConfig
+
 - **描述**：分布式锁相关参数。
 - **字段**：
   - `driftFactor` (number, default: 0.01) — Redlock 漂移因子。
@@ -41,6 +44,7 @@
   - 所有数值字段 >= 0。
 
 ## 4. CacheNamespacePolicy
+
 - **描述**：定义某业务域的命名与失效策略。
 - **字段**：
   - `domain` (string) — 业务域标识（如 `tenant-config`）。
@@ -57,6 +61,7 @@
   - 指向 `CacheConsistencyRule` 描述写路径行为。
 
 ## 5. CacheConsistencyRule
+
 - **描述**：业务写路径的一致性定义。
 - **字段**：
   - `domain` (string) — 与 `CacheNamespacePolicy.domain` 对齐。
@@ -69,6 +74,7 @@
   - 当 `strategy = double-delete` 时，必须配置 `delayMs` 与至少一个通知通道。
 
 ## 6. CacheMetricsRecord (逻辑实体)
+
 - **描述**：用于监控上报的指标聚合结构。
 - **字段**：
   - `domain` (string)
@@ -81,6 +87,7 @@
   - 在监控系统中作为度量点，支持告警与趋势分析。
 
 ## 7. 键生成规则（抽象）
+
 - **描述**：`AbstractKeyBuilder` 抽象类及实现。
 - **关键方法**：
   - `uniqueIdentifier(payload: unknown): string`

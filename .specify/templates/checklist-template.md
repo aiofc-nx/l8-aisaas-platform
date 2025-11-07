@@ -8,16 +8,16 @@
 
 > **注意**：清单条目必须以中文撰写，并引用项目章程中的强制性原则（语言、注释、技术栈、测试、配置、日志）。
 
-<!-- 
+<!--
   ============================================================================
   IMPORTANT: The checklist items below are SAMPLE ITEMS for illustration only.
-  
+
   The /speckit.checklist command MUST replace these with actual items based on:
   - User's specific checklist request
   - Feature requirements from spec.md
   - Technical context from plan.md
   - Implementation details from tasks.md
-  
+
   DO NOT keep these sample items in the generated checklist file.
   ============================================================================
 -->

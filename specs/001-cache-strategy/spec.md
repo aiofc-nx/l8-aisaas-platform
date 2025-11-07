@@ -14,7 +14,7 @@
 - Q: 租户之间缓存部署策略采用单集群命名空间还是独立集群？ → A: 单一 Redis 集群按命名空间隔离
 - Q: 写路径主策略采用哪种缓存一致性方案？ → A: 写后双删并发送失效通知
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - 平台接口命中缓存 (Priority: P1)
 
@@ -66,7 +66,7 @@
 - 当分布式锁获取超时或 Redlock 客户端列表不完整时如何响应？必须返回明确的中文错误消息并提示运维检查配置。
 - 配置热加载过程中，旧实例如何平滑释放连接且避免请求落到未初始化的客户端？需定义日志与监控指标。
 
-## Requirements *(mandatory)*
+## Requirements _(mandatory)_
 
 ### Functional Requirements
 
@@ -79,13 +79,13 @@
 - **FR-007**：系统必须提供缓存故障降级策略开关，在实例不可用时快速回源、记录中文错误并触发告警钩子，同时避免请求长时间阻塞。
 - **FR-008**：系统必须实现默认写路径为“写前删除 + 写后延迟双删 + 失效通知”流程，允许在配置中调整延迟时间及通知通道，以保持共享集群内的一致性与命中率平衡。
 
-### Key Entities *(include if feature involves data)*
+### Key Entities _(include if feature involves data)_
 
 - **CacheConfigurationProfile**: 描述各环境的缓存实例集合、公共参数、命名空间以及日志开关，支持多租户与多地域部署。
 - **CacheNamespacePolicy**: 定义业务域的命名规则、TTL 策略、失效策略及监控标签，支撑统一的键管理。
 - **CacheConsistencyRule**: 规定写操作后的刷新/失效流程、分布式锁选项、回源策略，用于生成业务侧的缓存管控方案；默认包含延迟双删策略与失效通知配置。
 
-## Success Criteria *(mandatory)*
+## Success Criteria _(mandatory)_
 
 ### Measurable Outcomes
 

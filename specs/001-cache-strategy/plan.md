@@ -83,5 +83,5 @@ libs/
 ## Complexity Tracking
 
 | Violation | Why Needed | Simpler Alternative Rejected Because |
-|-----------|------------|-------------------------------------|
-| 无 | - | - |
+| --------- | ---------- | ------------------------------------ |
+| 无        | -          | -                                    |

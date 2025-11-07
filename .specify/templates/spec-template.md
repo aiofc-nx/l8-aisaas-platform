@@ -7,13 +7,13 @@
 
 > **注意**：规格说明必须使用中文撰写，并在每一处公共 API 描述中同步计划编写 TSDoc 注释和中文错误消息。
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing _(mandatory)_
 
 <!--
   IMPORTANT: User stories should be PRIORITIZED as user journeys ordered by importance.
   Each user story/journey must be INDEPENDENTLY TESTABLE - meaning if you implement just ONE of them,
   you should still have a viable MVP (Minimum Viable Product) that delivers value.
-  
+
   Assign priorities (P1, P2, P3, etc.) to each story, where P1 is the most critical.
   Think of each story as a standalone slice of functionality that can be:
   - Developed independently
@@ -77,7 +77,7 @@
 - 在 [边界条件] 下系统如何表现？
 - 遇到 [错误场景] 时系统如何处理？（需说明日志与错误消息的中文输出方案）
 
-## Requirements *(mandatory)*
+## Requirements _(mandatory)_
 
 <!--
   ACTION REQUIRED: The content in this section represents placeholders.
@@ -92,17 +92,17 @@
 - **FR-004**：系统必须 [数据要求，如「持久化用户偏好设置」]，涉及配置时需使用 `@hl8/config`。
 - **FR-005**：系统必须 [行为要求，如「记录所有安全事件」]，日志通过 `@hl8/logger` 输出。
 
-*Example of marking unclear requirements:*
+_Example of marking unclear requirements:_
 
 - **FR-006**：系统必须通过 [需澄清：认证方式未指定——邮箱/密码、SSO、OAuth？] 进行身份认证。
 - **FR-007**：系统必须保留用户数据 [需澄清：保留周期未指定]。
 
-### Key Entities *(include if feature involves data)*
+### Key Entities _(include if feature involves data)_
 
 - **[Entity 1]**: [What it represents, key attributes without implementation]
 - **[Entity 2]**: [What it represents, relationships to other entities]
 
-## Success Criteria *(mandatory)*
+## Success Criteria _(mandatory)_
 
 <!--
   ACTION REQUIRED: Define measurable success criteria.

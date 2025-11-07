@@ -31,7 +31,7 @@
 
 ## Constitution Check
 
-*闸门：在进入阶段 0 调研前必须完成，阶段 1 设计后需重新确认。*
+_闸门：在进入阶段 0 调研前必须完成，阶段 1 设计后需重新确认。_
 
 - **中文优先原则**：确认所有文档、注释、错误消息、日志及界面文本均为中文，且计划中明确英文变量需配套中文注释。
 - **代码即文档原则**：核查计划是否覆盖 TSDoc 注释编写、更新流程以及公共 API 的注释责任人。
@@ -55,6 +55,7 @@ specs/[###-feature]/
 ```
 
 ### Source Code (repository root)
+
 <!--
   ACTION REQUIRED: Replace the placeholder tree below with the concrete layout
   for this feature. Delete unused options and expand the chosen structure with
@@ -105,7 +106,7 @@ directories captured above]
 
 > **Fill ONLY if Constitution Check has violations that must be justified**
 
-| Violation | Why Needed | Simpler Alternative Rejected Because |
-|-----------|------------|-------------------------------------|
-| [e.g., 4th project] | [current need] | [why 3 projects insufficient] |
-| [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient] |
+| Violation                  | Why Needed         | Simpler Alternative Rejected Because |
+| -------------------------- | ------------------ | ------------------------------------ |
+| [e.g., 4th project]        | [current need]     | [why 3 projects insufficient]        |
+| [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient]  |
