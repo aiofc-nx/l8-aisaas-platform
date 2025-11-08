@@ -15,6 +15,7 @@ import {
   DEFAULT_DOUBLE_DELETE_DELAY_MS,
   DEFAULT_REDIS_LOCK_TTL_MS,
 } from "../constants/cache-defaults.js";
+import { CACHE_REDLOCK_TOKEN } from "../constants/cache-tokens.js";
 import { RedlockService as RedlockServiceToken } from "../internal/redlock-loader.js";
 import { RedlockService as MockRedlockService } from "../testing/redlock.mock.js";
 import { CacheNotificationService } from "./cache-notification.service.js";
@@ -64,20 +65,28 @@ export class CacheConsistencyService {
       typeof childFactory === "function"
         ? childFactory.call(logger, { context: CacheConsistencyService.name })
         : logger;
-    try {
-      this.redlockService = this.moduleRef.get<Redlock>(
-        RedlockServiceToken as unknown as Type<Redlock>,
-        {
+    const resolveRedlockSafely = (
+      token: Type<Redlock> | string | symbol,
+    ): Redlock | undefined => {
+      try {
+        return this.moduleRef.get<Redlock>(token, {
           strict: false,
-        },
-      );
-    } catch (error) {
-      this.logger.warn("分布式锁服务未注册，已降级为内存锁实现", {
-        error,
-      });
-      this.redlockService = undefined;
-    }
+        });
+      } catch {
+        return undefined;
+      }
+    };
+
+    const redlockFromCustomToken = resolveRedlockSafely(CACHE_REDLOCK_TOKEN);
+    const redlockFromModule = resolveRedlockSafely(
+      RedlockServiceToken as unknown as Type<Redlock>,
+    );
+
+    this.redlockService =
+      redlockFromCustomToken ?? redlockFromModule ?? undefined;
+
     if (!this.redlockService) {
+      this.logger.warn("分布式锁服务未注册，已降级为内存锁实现");
       this.redlockService = new MockRedlockService() as unknown as Redlock;
     }
     this.notificationService = notificationService;

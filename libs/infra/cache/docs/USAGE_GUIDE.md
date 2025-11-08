@@ -27,17 +27,17 @@ flowchart LR
 
 ## 2. 核心模块速览
 
-| 模块/服务                          | 作用简述 |
-| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `CacheInfrastructureModule`        | 打包导出所有缓存能力。业务模块只需 `imports: [CacheInfrastructureModule]` 即可获得依赖。                                         |
-| `CacheClientProvider`              | 管理 Redis 客户端的获取逻辑，支持默认客户端、命名空间映射，以及测试环境的内存 fallback。                                        |
-| `CacheReadService`                 | 提供 `getOrLoad` 方法，统一缓存命中/回源流程，默认序列化策略为 JSON。                                                             |
-| `CacheNamespaceRegistry/Service`   | 维护命名空间策略快照，提供列表视图并支持热更新监听。                                                                               |
-| `CacheConsistencyService`          | 写路径一致性核心，执行写前删除 + 写后延迟双删，支持锁竞争处理与通知触发。                                                         |
-| `CacheNotificationService`         | 默认将失效/预热事件写入日志，可在项目中替换为 MQ、Pub/Sub、Webhook 等通道。                                                        |
-| `CacheMetricsHook`                 | 记录命中、miss、调用耗时、锁等待等指标，便于接入监控。                                                                             |
-| `CacheConsistencyController`       | 提供 `/internal/cache/invalidations` 与 `/internal/cache/prefetch` API，便于远程触发失效/预热。                                     |
-| DTO (`InvalidateCacheDto` 等)      | 使用 `class-validator` 校验业务请求，确保符合规范，错误信息均为中文。                                                              |
+| 模块/服务                        | 作用简述                                                                                        |
+| -------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `CacheInfrastructureModule`      | 打包导出所有缓存能力。业务模块只需 `imports: [CacheInfrastructureModule]` 即可获得依赖。        |
+| `CacheClientProvider`            | 管理 Redis 客户端的获取逻辑，支持默认客户端、命名空间映射，以及测试环境的内存 fallback。        |
+| `CacheReadService`               | 提供 `getOrLoad` 方法，统一缓存命中/回源流程，默认序列化策略为 JSON。                           |
+| `CacheNamespaceRegistry/Service` | 维护命名空间策略快照，提供列表视图并支持热更新监听。                                            |
+| `CacheConsistencyService`        | 写路径一致性核心，执行写前删除 + 写后延迟双删，支持锁竞争处理与通知触发。                       |
+| `CacheNotificationService`       | 默认将失效/预热事件写入日志，可在项目中替换为 MQ、Pub/Sub、Webhook 等通道。                     |
+| `CacheMetricsHook`               | 记录命中、miss、调用耗时、锁等待等指标，便于接入监控。                                          |
+| `CacheConsistencyController`     | 提供 `/internal/cache/invalidations` 与 `/internal/cache/prefetch` API，便于远程触发失效/预热。 |
+| DTO (`InvalidateCacheDto` 等)    | 使用 `class-validator` 校验业务请求，确保符合规范，错误信息均为中文。                           |
 
 ---
 
@@ -134,6 +134,7 @@ const config = await this.cacheReadService.getOrLoad<TenantConfig>({
 ## 5. 写路径一致性流程
 
 ### 5.1 主要步骤
+
 1. **写前删除**：预先删除缓存，降低旧值读取概率。
 2. **写后延迟双删**：写完数据后等待一小段时间（默认 100ms）再删一次，处理数据库事务延迟。
 3. **锁竞争防护**：利用 Redlock 获取分布式锁，锁竞争时抛出 `OptimisticLockException` 并触发告警。
@@ -170,6 +171,7 @@ curl -X POST /internal/cache/prefetch \
 ```
 
 返回结果：
+
 - 失效接口：`{ "requestId": "...", "scheduledAt": "ISO 时间戳" }`
 - 预热接口：`{ "refreshed": number, "failures": [] }`
 
@@ -187,14 +189,15 @@ curl -X POST /internal/cache/prefetch \
 
 ## 7. 测试与调试建议
 
-| 测试类型 | 说明 | 命令 |
-| -------- | ---- | ---- |
-| 单元测试 | `CacheReadService`、`CacheConsistencyService` 等核心逻辑 | `pnpm --filter @hl8/cache test` |
-| 集成测试 | Fastify 模块覆盖失效 API、锁竞争、预热 | `pnpm --filter nest-typescript-starter test -- cache-*` |
-| 契约测试 | 验证 OpenAPI 契约是否与实现一致 | `pnpm exec jest --config tests/jest.config.ts` |
-| Lint & 格式 | 保证 TSDoc、中文注释与规范一致 | `pnpm run lint` |
+| 测试类型    | 说明                                                     | 命令                                                    |
+| ----------- | -------------------------------------------------------- | ------------------------------------------------------- |
+| 单元测试    | `CacheReadService`、`CacheConsistencyService` 等核心逻辑 | `pnpm --filter @hl8/cache test`                         |
+| 集成测试    | Fastify 模块覆盖失效 API、锁竞争、预热                   | `pnpm --filter nest-typescript-starter test -- cache-*` |
+| 契约测试    | 验证 OpenAPI 契约是否与实现一致                          | `pnpm exec jest --config tests/jest.config.ts`          |
+| Lint & 格式 | 保证 TSDoc、中文注释与规范一致                           | `pnpm run lint`                                         |
 
 调试技巧：
+
 - 使用 `CacheNotificationService` 的日志输出确认通知是否触发。
 - 在本地可通过 fallback Redis 客户端（Map 存储）验证逻辑，而无需真实 Redis。
 - 通过 `CacheMetricsHook` 记录的指标可以接入监控仪表盘，观察命中率和锁等待。

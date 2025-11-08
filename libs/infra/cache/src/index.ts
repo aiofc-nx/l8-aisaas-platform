@@ -14,4 +14,5 @@ export * from "./services/cache-namespace.service.js";
 export * from "./services/cache-consistency.service.js";
 export * from "./services/cache-notification.service.js";
 export * from "./constants/cache-defaults.js";
+export * from "./constants/cache-tokens.js";
 export * from "./cache-infrastructure.module.js";

@@ -6,7 +6,6 @@ import { TenantConfigKeyBuilder } from "./keys/tenant-config-key.builder.js";
 import { CacheNamespaceRegistry } from "./config/cache-namespace.registry.js";
 import { CacheNamespaceService } from "./services/cache-namespace.service.js";
 import { CacheConsistencyService } from "./services/cache-consistency.service.js";
-import { CacheConfig } from "./config/cache.config.js";
 import { CacheNotificationService } from "./services/cache-notification.service.js";
 
 /**
@@ -23,7 +22,6 @@ import { CacheNotificationService } from "./services/cache-notification.service.
     CacheNamespaceService,
     CacheConsistencyService,
     CacheNotificationService,
-    CacheConfig,
   ],
   exports: [
     CacheClientProvider,
@@ -34,7 +32,6 @@ import { CacheNotificationService } from "./services/cache-notification.service.
     CacheNamespaceService,
     CacheConsistencyService,
     CacheNotificationService,
-    CacheConfig,
   ],
 })
 export class CacheInfrastructureModule {}

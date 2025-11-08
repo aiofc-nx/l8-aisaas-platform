@@ -7,6 +7,7 @@ import { AppController } from "./app.controller.js";
 import { AppConfig } from "./config/app.config.js";
 import { TenantConfigModule } from "./modules/tenant-config/tenant-config.module.js";
 import { CacheModule } from "./modules/cache/cache.module.js";
+import { CacheInfrastructureProviderModule } from "./modules/cache/cache-infrastructure.provider.module.js";
 
 /**
  * @description HL8 SAAS 平台应用的根模块，负责聚合配置能力与日志能力，确保上下游模块可获得统一的基础设施支持
@@ -75,6 +76,7 @@ import { CacheModule } from "./modules/cache/cache.module.js";
         }),
       ],
     }),
+    CacheInfrastructureProviderModule,
     // Fastify 专用日志模块（零开销，复用 Fastify Pino）
     // 注意：必须在 TenantsModule 之前加载，因为 TenantsController 依赖 Logger
     // 启用企业级功能：上下文注入、敏感信息脱敏、性能监控、美化输出
