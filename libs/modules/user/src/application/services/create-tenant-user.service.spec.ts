@@ -69,7 +69,6 @@ describe("CreateTenantUserService", () => {
       }),
     ).rejects.toBeInstanceOf(UserDomainException);
   });
-
   it("should reject invalid mobile numbers", async () => {
     await expect(
       service.execute({

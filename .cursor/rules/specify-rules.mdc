@@ -5,6 +5,10 @@
 Auto-generated from all feature plans. Last updated: 2025-11-07
 
 ## Active Technologies
+- TypeScript 5.x（Node.js ≥ 20，NodeNext 模块） + NestJS + `@nestjs/platform-fastify`、`@hl8/logger`、`@hl8/config`、`class-validator`、（新增）`uuid` 值对象工具 (002-create-user)
+- PostgreSQL（未来真实实现）；当前迭代提供内存仓储以支撑领域逻辑与契约测试 (002-create-user)
+- TypeScript 5.x（Node.js ≥ 20，NodeNext 模块） + NestJS 11、`@nestjs/passport`、`passport`/`passport-jwt`、`@nestjs/jwt`、`@casl/ability`、`nestjs-cls`、`bcrypt`、`@hl8/logger`、`@hl8/config`、`@hl8/exceptions`、`@hl8/async-storage` (002-create-user)
+- PostgreSQL（用户/角色/权限持久化，当前迭代仍以内存实现 + 种子数据）；Redis 暂不使用（刷新令牌吊销策略先以内存/数据库实现） (002-create-user)
 
 - TypeScript (Node.js ≥20, NodeNext 模块系统) + `@hl8/config`, `@hl8/logger`, `@songkeys/nestjs-redis`, `@anchan828/nest-redlock`, `ioredis`, `class-validator`, `nestjs-cls` (001-cache-strategy)
 
@@ -24,6 +28,8 @@ npm test && npm run lint
 TypeScript (Node.js ≥20, NodeNext 模块系统): Follow standard conventions
 
 ## Recent Changes
+- 002-create-user: Added TypeScript 5.x（Node.js ≥ 20，NodeNext 模块） + NestJS 11、`@nestjs/passport`、`passport`/`passport-jwt`、`@nestjs/jwt`、`@casl/ability`、`nestjs-cls`、`bcrypt`、`@hl8/logger`、`@hl8/config`、`@hl8/exceptions`、`@hl8/async-storage`
+- 002-create-user: Added TypeScript 5.x（Node.js ≥ 20，NodeNext 模块） + NestJS + `@nestjs/platform-fastify`、`@hl8/logger`、`@hl8/config`、`class-validator`、（新增）`uuid` 值对象工具
 
 - 001-cache-strategy: Added TypeScript (Node.js ≥20, NodeNext 模块系统) + `@hl8/config`, `@hl8/logger`, `@songkeys/nestjs-redis`, `@anchan828/nest-redlock`, `ioredis`, `class-validator`, `nestjs-cls`
 

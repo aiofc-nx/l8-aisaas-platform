@@ -8,6 +8,8 @@ import { AppConfig } from "./config/app.config.js";
 import { TenantConfigModule } from "./modules/tenant-config/tenant-config.module.js";
 import { CacheModule } from "./modules/cache/cache.module.js";
 import { CacheInfrastructureProviderModule } from "./modules/cache/cache-infrastructure.provider.module.js";
+import { UserModule } from "./modules/user/user.module.js";
+import { AuthModule } from "./modules/auth/auth.module.js";
 
 /**
  * @description HL8 SAAS 平台应用的根模块，负责聚合配置能力与日志能力，确保上下游模块可获得统一的基础设施支持
@@ -135,6 +137,8 @@ import { CacheInfrastructureProviderModule } from "./modules/cache/cache-infrast
     // 业务模块：租户配置缓存接口
     TenantConfigModule,
     CacheModule,
+    UserModule,
+    AuthModule,
   ],
 })
 export class AppModule {}

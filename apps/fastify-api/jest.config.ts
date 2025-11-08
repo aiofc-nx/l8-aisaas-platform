@@ -3,7 +3,9 @@ import { fileURLToPath } from "node:url";
 import { createRequire } from "node:module";
 
 const require = createRequire(path.resolve(process.cwd(), "package.json"));
-const workspaceRoot = path.resolve(process.cwd(), "..", "..");
+const workspaceRoot = process.env.INIT_CWD
+  ? path.resolve(process.env.INIT_CWD)
+  : path.resolve(process.cwd(), "..", "..");
 const libsRoot = path.resolve(workspaceRoot, "libs");
 const redlockEsmEntry = require.resolve("@anchan828/nest-redlock");
 const redlockEsmRoot = path.dirname(redlockEsmEntry);
@@ -57,6 +59,8 @@ export default {
       libsRoot,
       "infra/async-storage/src/index.ts",
     ),
+    "^@hl8/user$": path.resolve(libsRoot, "modules/user/src/index.ts"),
+    "^@hl8/auth$": path.resolve(libsRoot, "modules/auth/src/index.ts"),
     "^@anchan828/nest-redlock/dist/esm/(.*)$": redlockEsmMapper,
   },
 };

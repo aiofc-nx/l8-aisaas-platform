@@ -94,7 +94,6 @@ describe("RefreshService", () => {
     ).rejects.toBeInstanceOf(GeneralUnauthorizedException);
     expect(sessions.findByRefreshToken).not.toHaveBeenCalled();
   });
-
   it("should reject unknown refresh token", async () => {
     await expect(
       service.execute(new RefreshCommand("not-found-token")),

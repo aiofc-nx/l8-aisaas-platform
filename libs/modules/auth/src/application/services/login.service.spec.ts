@@ -119,7 +119,6 @@ describe("LoginService", () => {
     ).rejects.toBeInstanceOf(GeneralUnauthorizedException);
     expect(passwordHasher.compare).toHaveBeenCalled();
   });
-
   it("should reject when email format invalid", async () => {
     await expect(
       service.execute(new LoginCommand("invalid-email", "any")),

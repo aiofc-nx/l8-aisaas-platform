@@ -69,7 +69,6 @@ describe("CaslAbilityFactory", () => {
     );
 
     const ability = factory.createForAccount(account);
-
     expect(ability.can(Actions.Manage, Subjects.User)).toBe(true);
     expect(ability.can(Actions.Manage, Subjects.Tenant)).toBe(true);
   });

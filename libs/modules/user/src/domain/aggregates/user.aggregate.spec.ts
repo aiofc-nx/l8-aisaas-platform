@@ -55,7 +55,6 @@ describe("User Aggregate", () => {
       createdBy: PlatformAdminId.fromString(ADMIN_ID),
     });
     user.pullDomainEvents();
-
     user.assignRoles([UserRole.TenantAdmin, UserRole.TenantAdmin]);
     expect(user.roles).toEqual([UserRole.TenantAdmin]);
   });
