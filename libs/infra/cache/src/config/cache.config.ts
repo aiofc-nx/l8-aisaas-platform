@@ -29,6 +29,13 @@ export class CacheConfig {
   errorLog: boolean = true;
 
   /**
+   * @description 是否强制使用内存缓存占位，跳过真实 Redis 连接（开发或测试环境专用）。
+   */
+  @IsBoolean()
+  @IsOptional()
+  useMemoryFallback: boolean = false;
+
+  /**
    * @description 默认客户端键名，未指定时使用数组首个配置。
    */
   @IsString()

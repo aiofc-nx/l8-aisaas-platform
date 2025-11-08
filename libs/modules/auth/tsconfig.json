@@ -1,0 +1,17 @@
+{
+  "extends": "@repo/typescript-config/nestjs.json",
+  "compilerOptions": {
+    "allowJs": true,
+    "esModuleInterop": true,
+    "incremental": false,
+    "baseUrl": ".",
+    "outDir": "./dist",
+    "paths": {
+      "@hl8/logger": ["../../infra/logger/src/index.ts"],
+      "@hl8/exceptions": ["../../infra/exceptions/src/index.ts"],
+      "@hl8/user": ["../user/src/index.ts"]
+    }
+  },
+  "include": ["src", "tests"],
+  "exclude": ["node_modules", "dist"]
+}

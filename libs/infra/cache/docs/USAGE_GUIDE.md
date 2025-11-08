@@ -208,6 +208,7 @@ curl -X POST /internal/cache/prefetch \
 
 1. **本地没有配置 Redis，如何运行？**
    - `CacheClientProvider` 会使用内存 Map 作为 fallback，适合单元测试或 demo。
+   - 在需要完全跳过 Redis 连接时，可设置环境变量 `CACHE_REDIS_USE_MEMORY=true`（或 `CACHE_USE_MEMORY_FALLBACK=true`），应用会在启动阶段自动启用内存占位。
    - 若需要模拟延迟/错误，可继承该逻辑手动注入自定义客户端。
 
 2. **锁竞争频繁怎么办？**
