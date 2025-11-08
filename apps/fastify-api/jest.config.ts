@@ -1,9 +1,13 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { createRequire } from "node:module";
 
-const currentDir = path.dirname(fileURLToPath(import.meta.url));
-const workspaceRoot = path.resolve(currentDir, "..", "..");
+const require = createRequire(path.resolve(process.cwd(), "package.json"));
+const workspaceRoot = path.resolve(process.cwd(), "..", "..");
 const libsRoot = path.resolve(workspaceRoot, "libs");
+const redlockEsmEntry = require.resolve("@anchan828/nest-redlock");
+const redlockEsmRoot = path.dirname(redlockEsmEntry);
+const redlockEsmMapper = path.join(redlockEsmRoot, "$1").replace(/\\/g, "/");
 
 export default {
   collectCoverageFrom: [
@@ -14,6 +18,7 @@ export default {
   coverageDirectory: "../coverage",
   moduleFileExtensions: ["js", "json", "ts"],
   rootDir: "src",
+  roots: ["<rootDir>", "<rootDir>/../test"],
   testEnvironment: "node",
   testMatch: [
     "**/*.spec.ts",
@@ -38,9 +43,20 @@ export default {
     "node_modules/(?!(@hl8|ioredis|class-transformer|class-validator)/)",
   ],
   moduleNameMapper: {
-    "^@/(.*)$": "<rootDir>/$1",
     "^(\\.{1,2}/.*)\\.js$": "$1",
+    "^@/(.*)$": "<rootDir>/$1",
     "^@hl8/config$": path.resolve(libsRoot, "infra/config/src/index.ts"),
     "^@hl8/logger$": path.resolve(libsRoot, "infra/logger/src/index.ts"),
+    "^@hl8/cache$": path.resolve(libsRoot, "infra/cache/src/index.ts"),
+    "^@hl8/exceptions$": path.resolve(
+      libsRoot,
+      "infra/exceptions/src/index.ts",
+    ),
+    "^@hl8/bootstrap$": path.resolve(libsRoot, "infra/bootstrap/src/index.ts"),
+    "^@hl8/async-storage$": path.resolve(
+      libsRoot,
+      "infra/async-storage/src/index.ts",
+    ),
+    "^@anchan828/nest-redlock/dist/esm/(.*)$": redlockEsmMapper,
   },
 };

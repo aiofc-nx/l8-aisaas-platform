@@ -1,0 +1,3 @@
+- `tests/` 目录用于缓存相关契约测试，包含独立的 Jest 配置、TypeScript 配置以及 `js-yaml` 类型声明。
+- `tests/contract/cache/cache-management.contract.spec.ts` 与 `cache-consistency.contract.spec.ts` 分别覆盖命名空间与写路径相关的 OpenAPI 契约。
+- 通过 `pnpm exec jest --config tests/jest.config.ts` 或 `tsc -p tests/tsconfig.contract.json` 可独立校验契约定义。

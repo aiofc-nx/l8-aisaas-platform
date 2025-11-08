@@ -1,0 +1,175 @@
+openapi: 3.1.0
+info:
+  title: Cache Management API
+  version: 1.0.0
+  description: |
+    多租户缓存管理接口，用于业务侧触发失效、刷新与查询命名空间策略。
+servers:
+  - url: https://{env}.hl8.local
+    description: 平台内部 API
+    variables:
+      env:
+        default: dev
+        enum: [dev, staging, prod]
+paths:
+  /internal/cache/namespaces:
+    get:
+      summary: 查询缓存命名空间配置
+      description: 返回所有业务域的命名空间策略与默认 TTL。
+      tags:
+        - Cache Namespace
+      responses:
+        '200':
+          description: 查询成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/NamespacePolicyDto'
+        '500':
+          description: 服务器内部错误（中文错误消息）
+  /internal/cache/invalidations:
+    post:
+      summary: 触发缓存失效
+      description: 对指定域、租户和键执行“写后延迟双删 + 失效通知”流程。
+      tags:
+        - Cache Control
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvalidateRequest'
+      responses:
+        '202':
+          description: 已接受失效请求
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvalidateAccepted'
+        '400':
+          description: 参数校验失败（中文错误消息）
+        '409':
+          description: 锁竞争导致的冲突
+        '500':
+          description: 服务器内部错误（中文错误消息）
+  /internal/cache/prefetch:
+    post:
+      summary: 主动刷新缓存
+      description: 业务主动请求刷新目标键值，常用于预热和批量更新。
+      tags:
+        - Cache Control
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PrefetchRequest'
+      responses:
+        '200':
+          description: 刷新完成并返回最新数据摘要
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrefetchResult'
+        '400':
+          description: 参数校验失败（中文错误消息）
+        '500':
+          description: 服务器内部错误（中文错误消息）
+components:
+  schemas:
+    NamespacePolicyDto:
+      type: object
+      required: [domain, keyPrefix, separator, defaultTTL, evictionPolicy]
+      properties:
+        domain:
+          type: string
+          example: tenant-config
+        keyPrefix:
+          type: string
+          example: tc
+        keySuffix:
+          type: string
+          nullable: true
+        separator:
+          type: string
+          default: ':'
+        defaultTTL:
+          type: integer
+          minimum: 1
+        evictionPolicy:
+          type: string
+          enum: [double-delete, refresh, ttl-only]
+        hitThresholdAlert:
+          type: number
+          nullable: true
+    InvalidateRequest:
+      type: object
+      required: [domain, tenantId, keys, reason]
+      properties:
+        domain:
+          type: string
+          description: 业务域标识。
+        tenantId:
+          type: string
+          description: 租户标识。
+        keys:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        delayMs:
+          type: integer
+          minimum: 0
+          description: 覆写策略默认延迟时间，单位毫秒。
+        notify:
+          type: boolean
+          default: true
+          description: 是否发送失效通知。
+        reason:
+          type: string
+          description: 中文描述失效原因。
+    InvalidateAccepted:
+      type: object
+      properties:
+        requestId:
+          type: string
+        scheduledAt:
+          type: string
+          format: date-time
+    PrefetchRequest:
+      type: object
+      required: [domain, tenantId, keys]
+      properties:
+        domain:
+          type: string
+        tenantId:
+          type: string
+        keys:
+          type: array
+          items:
+            type: string
+        bypassLock:
+          type: boolean
+          default: false
+          description: 是否在刷新时跳过分布式锁。
+    PrefetchResult:
+      type: object
+      properties:
+        refreshed:
+          type: integer
+          description: 成功刷新的键数量。
+        failures:
+          type: array
+          items:
+            type: object
+            properties:
+              key:
+                type: string
+              message:
+                type: string
+                description: 中文错误消息。

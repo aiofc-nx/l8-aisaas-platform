@@ -111,6 +111,12 @@ export async function createFastifyApplication<
   return context;
 }
 
+/**
+ * @description 根据配置生成用于引导阶段的 Logger，并附加子上下文
+ * @param logger 原始 Logger 实例
+ * @param loggerChildContext 子 Logger 上下文字段
+ * @returns Logger | undefined 当无法生成 Logger 时返回 undefined
+ */
 function resolveBootstrapLogger(
   logger: Logger | undefined,
   loggerChildContext?: Record<string, unknown>,
@@ -129,18 +135,31 @@ function resolveBootstrapLogger(
   return logger;
 }
 
+/**
+ * @description 判断 Logger 是否实现 error 方法，便于安全调用
+ * @param logger 待检查的 Logger 实例
+ * @returns 返回类型守卫，指示 Logger 是否具备 error 方法
+ */
 function isLoggerWithError(
   logger: Logger,
 ): logger is Logger & { error: (message: string) => void } {
   return typeof (logger as Logger).error === "function";
 }
 
+/**
+ * @description 判断 Logger 是否实现 log 方法，便于安全调用
+ * @param logger 待检查的 Logger 实例
+ * @returns 返回类型守卫，指示 Logger 是否具备 log 方法
+ */
 function isLoggerWithLog(
   logger: Logger,
 ): logger is Logger & { log: (message: string) => void } {
   return typeof (logger as Logger).log === "function";
 }
 
+/**
+ * @description 支持生成子 Logger 的接口定义
+ */
 interface LoggerWithChild extends Logger {
   child: (bindings: Record<string, unknown>) => Logger;
 }

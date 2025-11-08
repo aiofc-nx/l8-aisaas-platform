@@ -61,6 +61,12 @@ export async function bootstrapFastifyApplication<
   bannerPrinter(config);
 }
 
+/**
+ * @description 根据传入配置启用 CORS，若未提供则回退至允许凭证的通配策略
+ * @param app Fastify 适配的 Nest 应用实例
+ * @param corsOptions 自定义 CORS 配置
+ * @returns void
+ */
 function configureCors(
   app: NestFastifyApplication,
   corsOptions: Parameters<NestFastifyApplication["enableCors"]>[0],
@@ -76,6 +82,12 @@ function configureCors(
   });
 }
 
+/**
+ * @description 自动集成 Swagger 文档，支持根据配置开关与自定义选项
+ * @param app Fastify 适配的 Nest 应用实例
+ * @param swaggerOptions Swagger 集成配置
+ * @returns void
+ */
 function configureSwaggerIntegration(
   app: NestFastifyApplication,
   swaggerOptions?: BootstrapSwaggerOptions,
@@ -88,6 +100,12 @@ function configureSwaggerIntegration(
   setupSwagger(config, app, options);
 }
 
+/**
+ * @description 按配置注册全局验证管道，统一启用字段白名单与转换策略
+ * @param app Fastify 适配的 Nest 应用实例
+ * @param validationPipeOptions ValidationPipe 配置项
+ * @returns void
+ */
 function configureGlobalPipes(
   app: NestFastifyApplication,
   validationPipeOptions: ConstructorParameters<typeof ValidationPipe>[0],
@@ -95,6 +113,11 @@ function configureGlobalPipes(
   app.useGlobalPipes(new ValidationPipe(validationPipeOptions));
 }
 
+/**
+ * @description 在控制台输出应用启动横幅，提供关键访问信息与环境提示
+ * @param config Fastify 启动配置
+ * @returns void
+ */
 function printStartupBanner(config: FastifyBootstrapConfig): void {
   const { PORT: port, HOST: host, NODE_ENV: nodeEnv } = config;
   const displayHost = host === "0.0.0.0" ? "localhost" : host;
