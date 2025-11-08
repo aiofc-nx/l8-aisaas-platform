@@ -17,6 +17,9 @@ type LoggerWithOptionalChild = Logger & {
   child?: (context: Record<string, unknown>) => Logger;
 };
 
+/**
+ * @description 缓存读取选项，描述命中策略、序列化与命名空间上下文。
+ */
 export interface CacheReadOptions<T> {
   /** @description 缓存所属业务域，例如 tenant-config */
   domain: string;
@@ -55,6 +58,14 @@ export class CacheReadService {
         : logger;
   }
 
+  /**
+   * @description 按键读取缓存，若未命中则回源加载并写回缓存。
+   * @typeParam T 缓存数据类型
+   * @param options 缓存读取与回源配置项
+   * @returns 缓存内容或回源结果
+   * @throws GeneralBadRequestException 当输入参数不符合要求时抛出
+   * @throws GeneralInternalServerException 当 Redis 操作或序列化失败时抛出
+   */
   public async getOrLoad<T>(options: CacheReadOptions<T>): Promise<T> {
     this.validateOptions(options);
     const {

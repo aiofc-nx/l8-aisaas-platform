@@ -26,10 +26,19 @@ export class TenantConfigKeyBuilder extends AbstractCacheKeyBuilder<TenantConfig
     super(logger);
   }
 
+  /**
+   * @description 返回租户配置缓存的命名空间常量。
+   * @returns 命名空间字符串 tenant-config
+   */
   protected getNamespace(): string {
     return TENANT_CONFIG_NAMESPACE;
   }
 
+  /**
+   * @description 组合租户配置缓存键的核心片段。
+   * @param payload 租户配置缓存载荷
+   * @returns 包含租户 ID、配置键与可选变种标签的片段数组
+   */
   protected getKeyParts(
     payload: TenantConfigKeyPayload,
   ): Array<string | number> {

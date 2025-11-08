@@ -44,11 +44,14 @@ try {
   ];
   const fallbackPath = candidates.find((candidate) => existsSync(candidate));
   if (!fallbackPath) {
-    throw new Error("Unable to resolve cache redlock mock file.");
+    throw new Error("无法解析 Redlock 桩模块文件，请检查测试依赖。");
   }
   redlockExports = requireModule(fallbackPath);
 }
 
+/**
+ * @description 导出 Redlock 模块与服务，优先引用真实依赖，缺省时退回测试桩。
+ */
 export const { RedlockModule, RedlockService } = redlockExports as {
   RedlockModule: typeof import("@anchan828/nest-redlock").RedlockModule;
   RedlockService: typeof import("@anchan828/nest-redlock").RedlockService;

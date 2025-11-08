@@ -22,7 +22,9 @@ export abstract class AbstractCacheKeyBuilder<TPayload> {
 
   /**
    * @description 生成完整缓存键，对外暴露的核心方法。
-   * @param payload - 构建缓存键所需的业务载荷
+   * @param payload 构建缓存键所需的业务载荷
+   * @returns 拼接后的完整缓存键字符串
+   * @throws GeneralBadRequestException 当命名空间或键片段不合法时抛出
    */
   public build(payload: TPayload): string {
     const namespace = this.getNamespace(payload);
@@ -39,7 +41,9 @@ export abstract class AbstractCacheKeyBuilder<TPayload> {
 
   /**
    * @description 使用任意自定义片段生成缓存键，提供工具方法供子类或外部复用。
-   * @param segments - 键片段数组
+   * @param segments 键片段数组
+   * @returns 拼接后的缓存键
+   * @throws GeneralBadRequestException 当片段缺失或为空时抛出
    */
   public buildFromSegments(segments: Array<string | number>): string {
     if (!segments || segments.length === 0) {
@@ -55,16 +59,22 @@ export abstract class AbstractCacheKeyBuilder<TPayload> {
 
   /**
    * @description 返回命名空间/键前缀，通常包含租户或业务域信息。
+   * @param payload 构建缓存键的业务载荷
+   * @returns 命名空间字符串
    */
   protected abstract getNamespace(payload: TPayload): string;
 
   /**
    * @description 返回主体键片段数组。
+   * @param payload 构建缓存键的业务载荷
+   * @returns 键片段数组
    */
   protected abstract getKeyParts(payload: TPayload): Array<string | number>;
 
   /**
    * @description 可选的键后缀，默认返回 undefined。
+   * @param payload 构建缓存键的业务载荷
+   * @returns 可选的键后缀
    */
   protected getSuffix(_: TPayload): string | undefined {
     return undefined;
@@ -72,6 +82,7 @@ export abstract class AbstractCacheKeyBuilder<TPayload> {
 
   /**
    * @description 片段分隔符，默认使用冒号。
+   * @returns 键分隔符字符串
    */
   protected getSeparator(): string {
     return ":";

@@ -38,6 +38,8 @@ export class CacheMetricsHook {
 
   /**
    * @description 记录缓存命中事件。
+   * @param payload 指标载荷，自动补充 metric 与 value
+   * @returns void
    */
   public recordHit(
     payload: Omit<CacheMetricsPayload, "metric" | "value">,
@@ -47,6 +49,8 @@ export class CacheMetricsHook {
 
   /**
    * @description 记录缓存未命中事件。
+   * @param payload 指标载荷，自动补充 metric 与 value
+   * @returns void
    */
   public recordMiss(
     payload: Omit<CacheMetricsPayload, "metric" | "value">,
@@ -56,6 +60,8 @@ export class CacheMetricsHook {
 
   /**
    * @description 记录回源耗时指标。
+   * @param payload 包含耗时数值的指标载荷
+   * @returns void
    */
   public recordOriginLatency(
     payload: Omit<CacheMetricsPayload, "metric">,
@@ -65,6 +71,8 @@ export class CacheMetricsHook {
 
   /**
    * @description 记录锁等待耗时指标。
+   * @param payload 包含锁等待数值的指标载荷
+   * @returns void
    */
   public recordLockWait(payload: Omit<CacheMetricsPayload, "metric">): void {
     this.record({ ...payload, metric: "lock" });
@@ -72,6 +80,8 @@ export class CacheMetricsHook {
 
   /**
    * @description 记录缓存操作失败事件。
+   * @param payload 指标载荷，需额外提供 error
+   * @returns void
    */
   public recordFailure(
     payload: Omit<CacheMetricsPayload, "metric" | "value"> & {

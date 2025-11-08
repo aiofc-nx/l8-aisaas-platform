@@ -8,6 +8,9 @@ import { CacheConfig } from "../config/cache.config.js";
 
 /**
  * @description 注册 Redis 客户端动态模块，统一注入缓存配置与异常处理。
+ * @returns Redis 动态模块，自动加载缓存客户端配置
+ * @throws MissingConfigurationForFeatureException 当未配置任何缓存客户端时抛出
+ * @throws GeneralInternalServerException 当注册流程发生未知异常时抛出
  */
 export function setupRedisModule(): DynamicModule {
   try {

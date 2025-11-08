@@ -11,6 +11,9 @@ import { CacheConfig } from "../config/cache.config.js";
 
 /**
  * @description 注册 Redlock 模块，基于现有 Redis 客户端构建分布式锁能力。
+ * @returns Redlock 动态模块，供缓存基础设施模块导入
+ * @throws MissingConfigurationForFeatureException 当未检测到任何 Redis 客户端时抛出
+ * @throws GeneralInternalServerException 当模块注册或配置加载失败时抛出
  */
 export function setupRedisLockModule(): DynamicModule {
   try {

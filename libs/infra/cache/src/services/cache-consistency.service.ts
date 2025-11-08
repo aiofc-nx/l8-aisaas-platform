@@ -95,6 +95,10 @@ export class CacheConsistencyService {
   /**
    * @description 执行缓存失效流程：持锁、立即删、延迟删并记录日志。
    * @param command 缓存失效指令
+   * @returns Promise<void>
+   * @throws MissingConfigurationForFeatureException 当找不到命名空间策略或 Redis 客户端时抛出
+   * @throws OptimisticLockException 当分布式锁竞争导致无法获取锁时抛出
+   * @throws GeneralInternalServerException 当失效流程中出现未知异常时抛出
    */
   public async invalidate(command: CacheInvalidationCommand): Promise<void> {
     this.validateCommand(command);

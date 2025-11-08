@@ -59,7 +59,10 @@ export class CacheClientProvider {
 
   /**
    * @description 根据 clientKey 获取 Redis 客户端，未指定时使用默认客户端。
-   * @param clientKey - 指定的客户端键名
+   * @param clientKey 指定的客户端键名
+   * @returns 匹配的 Redis 客户端实例
+   * @throws MissingConfigurationForFeatureException 当指定客户端不存在时抛出
+   * @throws GeneralInternalServerException 当获取客户端过程中发生未知异常时抛出
    */
   public getClient(clientKey?: string): Redis {
     const targetKey = this.resolveTargetClientKey(clientKey);
@@ -98,6 +101,8 @@ export class CacheClientProvider {
 
   /**
    * @description 返回默认的命名空间前缀，用于组合缓存键。
+   * @param clientKey 指定的客户端键名
+   * @returns 对应客户端的命名空间前缀，若无配置则返回 undefined
    */
   public getNamespacePrefix(clientKey?: string): string | undefined {
     const targetKey = this.resolveTargetClientKey(clientKey);

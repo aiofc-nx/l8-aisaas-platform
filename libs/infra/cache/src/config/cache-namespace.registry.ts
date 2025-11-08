@@ -27,6 +27,10 @@ export interface CacheNamespacePolicy {
   hitThresholdAlert: number | null;
 }
 
+/**
+ * @description 策略变更监听器函数类型，监听最新策略列表。
+ * @param policies 最新的策略集合快照
+ */
 type PolicyChangeListener = (policies: CacheNamespacePolicy[]) => void;
 
 /**
@@ -47,6 +51,7 @@ export class CacheNamespaceRegistry {
 
   /**
    * @description 返回当前全部命名空间策略，按照域名排序。
+   * @returns 排序后的策略视图数组
    */
   public list(): CacheNamespacePolicy[] {
     return [...this.policies.values()].sort((a, b) =>
@@ -57,6 +62,7 @@ export class CacheNamespaceRegistry {
   /**
    * @description 根据业务域获取策略，不存在时返回 undefined。
    * @param domain 业务域标识
+   * @returns 对应的策略记录，未命中时返回 undefined
    */
   public get(domain: string): CacheNamespacePolicy | undefined {
     return this.policies.get(domain);
@@ -65,6 +71,7 @@ export class CacheNamespaceRegistry {
   /**
    * @description 使用新的配置快照刷新策略集合。
    * @param config 缓存总体配置
+   * @returns void
    */
   public refreshFromConfig(config: CacheConfig): void {
     const policies = config.namespacePolicies ?? [];
@@ -74,6 +81,7 @@ export class CacheNamespaceRegistry {
   /**
    * @description 注册策略热加载监听器，返回取消订阅函数。
    * @param listener 策略变更回调
+   * @returns 取消订阅的函数
    */
   public onPoliciesChange(listener: PolicyChangeListener): () => void {
     this.listeners.add(listener);
@@ -85,6 +93,7 @@ export class CacheNamespaceRegistry {
   /**
    * @description 直接替换当前策略集合，并触发通知。
    * @param policies 策略配置数组
+   * @returns void
    */
   public replacePolicies(policies: CacheNamespacePolicyConfig[]): void {
     this.policies.clear();
