@@ -1,11 +1,11 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Optional, type Type } from "@nestjs/common";
+import { ModuleRef } from "@nestjs/core";
 import { Logger } from "@hl8/logger";
 import {
   GeneralBadRequestException,
   GeneralInternalServerException,
   MissingConfigurationForFeatureException,
 } from "@hl8/exceptions";
-import { RedlockService } from "@anchan828/nest-redlock";
 import type Redlock from "redlock";
 import type { Redis } from "ioredis";
 import { CacheClientProvider } from "./cache-client.provider.js";
@@ -15,6 +15,10 @@ import {
   DEFAULT_DOUBLE_DELETE_DELAY_MS,
   DEFAULT_REDIS_LOCK_TTL_MS,
 } from "../constants/cache-defaults.js";
+import { RedlockService as RedlockServiceToken } from "../internal/redlock-loader.js";
+import { RedlockService as MockRedlockService } from "../testing/redlock.mock.js";
+import { CacheNotificationService } from "./cache-notification.service.js";
+import { OptimisticLockException } from "@hl8/exceptions";
 
 /**
  * @description 缓存失效请求载荷，封装写路径完成后的双删策略参数。
@@ -38,28 +42,45 @@ export interface CacheInvalidationCommand {
   notify?: boolean;
 }
 
-type LoggerWithChild = Logger & {
-  child?: (context: Record<string, unknown>) => Logger;
-};
-
 /**
  * @description 缓存一致性服务，实现写前删除、写后延迟双删与通知日志。
  */
 @Injectable()
 export class CacheConsistencyService {
   private readonly logger: Logger;
+  private readonly redlockService?: Redlock;
+  private readonly notificationService?: CacheNotificationService;
 
   constructor(
     private readonly cacheClientProvider: CacheClientProvider,
     private readonly namespaceRegistry: CacheNamespaceRegistry,
-    private readonly redlockService: RedlockService,
+    private readonly moduleRef: ModuleRef,
     logger: Logger,
+    @Optional()
+    notificationService?: CacheNotificationService,
   ) {
-    const childFactory = (logger as LoggerWithChild).child;
+    const childFactory = logger.child;
     this.logger =
       typeof childFactory === "function"
         ? childFactory.call(logger, { context: CacheConsistencyService.name })
         : logger;
+    try {
+      this.redlockService = this.moduleRef.get<Redlock>(
+        RedlockServiceToken as unknown as Type<Redlock>,
+        {
+          strict: false,
+        },
+      );
+    } catch (error) {
+      this.logger.warn("分布式锁服务未注册，已降级为内存锁实现", {
+        error,
+      });
+      this.redlockService = undefined;
+    }
+    if (!this.redlockService) {
+      this.redlockService = new MockRedlockService() as unknown as Redlock;
+    }
+    this.notificationService = notificationService;
   }
 
   /**
@@ -79,6 +100,7 @@ export class CacheConsistencyService {
       reason,
       notify,
     } = command;
+    const shouldNotify = notify ?? true;
 
     const policy = this.namespaceRegistry.get(domain);
     if (!policy) {
@@ -93,40 +115,84 @@ export class CacheConsistencyService {
     const lockResource = this.buildLockResource(domain, tenantId);
 
     try {
-      const redlock = this.redlockService as unknown as Redlock;
-
-      if (!redlock || typeof redlock.using !== "function") {
+      if (
+        !this.redlockService ||
+        typeof this.redlockService.using !== "function"
+      ) {
         throw new GeneralInternalServerException(
           "分布式锁服务未配置，无法执行缓存一致性流程",
         );
       }
 
-      await redlock.using([lockResource], lockDurationMs, async (signal) => {
-        if (signal.aborted) {
-          throw (
-            signal.error ??
-            new GeneralInternalServerException("缓存锁已失效，无法保障一致性")
-          );
-        }
+      await this.redlockService.using(
+        [lockResource],
+        lockDurationMs,
+        async (signal) => {
+          if (signal.aborted) {
+            throw (
+              signal.error ??
+              new GeneralInternalServerException("缓存锁已失效，无法保障一致性")
+            );
+          }
 
-        await this.executeDoubleDelete(redis, keys, delayMs);
+          await this.executeDoubleDelete(redis, keys, delayMs);
 
-        this.logger.log("缓存失效流程完成", {
-          domain,
-          tenantId,
-          keys,
-          reason,
-        });
-
-        if (notify) {
-          this.logger.debug("已记录缓存失效事件，后续可集成事件总线", {
+          this.logger.log("缓存失效流程完成", {
             domain,
             tenantId,
             keys,
+            reason,
+          });
+
+          if (shouldNotify) {
+            this.logger.debug("已记录缓存失效事件，后续可集成事件总线", {
+              domain,
+              tenantId,
+              keys,
+            });
+            try {
+              await this.notificationService?.publishInvalidation({
+                domain,
+                tenantId,
+                keys,
+                reason,
+              });
+            } catch (notifyError) {
+              this.logger.error("缓存失效通知发送失败", undefined, {
+                domain,
+                tenantId,
+                keys,
+                notifyError,
+              });
+            }
+          }
+        },
+      );
+    } catch (error) {
+      if (error instanceof Error && error.name === "ResourceLockedError") {
+        const context = {
+          domain,
+          tenantId,
+          keys,
+          lockResource,
+        };
+        this.logger.warn("缓存锁竞争，失效操作中断", context);
+        try {
+          await this.notificationService?.publishLockContention(context);
+        } catch (notifyError) {
+          this.logger.error("锁竞争告警通知失败", undefined, {
+            ...context,
+            notifyError,
           });
         }
-      });
-    } catch (error) {
+        throw new OptimisticLockException(
+          undefined,
+          undefined,
+          "缓存锁正在使用中，请稍后重试",
+          undefined,
+          error,
+        );
+      }
       this.logger.error("缓存失效流程失败", undefined, {
         domain,
         tenantId,

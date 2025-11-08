@@ -1,8 +1,4 @@
 import { describe, it, expect, beforeEach, jest } from "@jest/globals";
-jest.mock("@anchan828/nest-redlock", () => ({
-  __esModule: true,
-  RedlockService: class {},
-}));
 import {
   GeneralBadRequestException,
   GeneralInternalServerException,
@@ -16,36 +12,48 @@ import {
   CacheEvictionPolicy,
   CacheNamespacePolicyConfig,
 } from "../config/cache-namespace-policy.config.js";
-import type { RedlockService } from "@anchan828/nest-redlock";
+import type Redlock from "redlock";
+import { ResourceLockedError } from "redlock";
 import type { Redis } from "ioredis";
+import type { ModuleRef } from "@nestjs/core";
+import { CacheNotificationService } from "./cache-notification.service.js";
 
 describe("CacheConsistencyService", () => {
   let service: CacheConsistencyService;
-  const redisDel = jest.fn<Promise<number>, string[]>(async () => 1);
+  const redisDel = jest.fn(async () => 1);
   const redisClient = { del: redisDel } as unknown as Redis;
 
   const cacheClientProvider = {
     getClient: jest.fn(() => redisClient),
   } as unknown as CacheClientProvider;
 
+  const createPolicy = () => ({
+    domain: "tenant-config",
+    keyPrefix: "tc",
+    keySuffix: null,
+    separator: ":",
+    defaultTTL: 300,
+    evictionPolicy: CacheEvictionPolicy.DoubleDelete,
+    hitThresholdAlert: null,
+  });
+
   const registry = {
-    get: jest.fn(() => ({
-      domain: "tenant-config",
-      keyPrefix: "tc",
-      keySuffix: null,
-      separator: ":",
-      defaultTTL: 300,
-      evictionPolicy: CacheEvictionPolicy.DoubleDelete,
-      hitThresholdAlert: null,
-    })),
+    get: jest.fn(() => createPolicy()),
   } as unknown as CacheNamespaceRegistry;
 
+  const redlockUsing = jest.fn(
+    async (
+      _resources: string[],
+      _duration: number,
+      routine: (signal: {
+        aborted: boolean;
+        error?: Error;
+      }) => Promise<unknown>,
+    ) => routine({ aborted: false }),
+  );
   const redlockService = {
-    using: jest.fn(async (_resources, _duration, routine) => {
-      // @ts-expect-error Partial AbortSignal structure
-      return routine({ aborted: false });
-    }),
-  } as unknown as RedlockService;
+    using: redlockUsing,
+  } as unknown as Redlock;
 
   const loggerStub = {
     log: jest.fn(),
@@ -56,31 +64,42 @@ describe("CacheConsistencyService", () => {
     child: jest.fn().mockReturnThis(),
   } as unknown as Logger;
 
-  beforeEach(() => {
+  const moduleRef = {
+    get: jest.fn().mockReturnValue(redlockService),
+  } as unknown as ModuleRef;
+
+  const notificationService = {
+    publishInvalidation: jest.fn(async () => undefined),
+    publishLockContention: jest.fn(async () => undefined),
+    publishPrefetchRequested: jest.fn(async () => ({
+      refreshed: 0,
+      failures: [],
+    })),
+  } as unknown as CacheNotificationService;
+
+  const resetStubs = () => {
     jest.clearAllMocks();
+    (notificationService.publishInvalidation as jest.Mock).mockClear();
+    (notificationService.publishLockContention as jest.Mock).mockClear();
+    (notificationService.publishPrefetchRequested as jest.Mock).mockClear();
+    redlockUsing.mockReset();
+    redlockUsing.mockImplementation(async (_resources, _duration, routine) =>
+      routine({ aborted: false }),
+    );
     (cacheClientProvider.getClient as jest.Mock).mockReturnValue(redisClient);
-    (registry.get as jest.Mock).mockImplementation(() => {
-      const policy = new CacheNamespacePolicyConfig();
-      policy.domain = "tenant-config";
-      policy.keyPrefix = "tc";
-      policy.keySuffix = null;
-      policy.defaultTTL = 300;
-      policy.evictionPolicy = CacheEvictionPolicy.DoubleDelete;
-      return {
-        domain: policy.domain,
-        keyPrefix: policy.keyPrefix,
-        keySuffix: policy.keySuffix,
-        separator: ":",
-        defaultTTL: policy.defaultTTL,
-        evictionPolicy: policy.evictionPolicy,
-        hitThresholdAlert: null,
-      };
-    });
+    (moduleRef.get as jest.Mock).mockReturnValue(redlockService);
+    (registry.get as jest.Mock).mockReset();
+    (registry.get as jest.Mock).mockReturnValue(createPolicy());
+  };
+
+  beforeEach(() => {
+    resetStubs();
     service = new CacheConsistencyService(
       cacheClientProvider,
       registry,
-      redlockService,
+      moduleRef,
       loggerStub,
+      notificationService,
     );
   });
 
@@ -93,7 +112,13 @@ describe("CacheConsistencyService", () => {
       delayMs: 0,
     });
 
-    expect(redlockService.using).toHaveBeenCalled();
+    expect(redlockUsing).toHaveBeenCalled();
+    expect(notificationService.publishInvalidation).toHaveBeenCalledWith({
+      domain: "tenant-config",
+      tenantId: "tenant-1",
+      keys: ["tenant-config:tenant-1:profile"],
+      reason: "写路径更新",
+    });
     expect(redisDel).toHaveBeenCalledTimes(2);
   });
 
@@ -140,9 +165,7 @@ describe("CacheConsistencyService", () => {
   });
 
   it("should wrap unexpected errors", async () => {
-    (redlockService.using as jest.Mock).mockRejectedValueOnce(
-      new Error("lock failed"),
-    );
+    redlockUsing.mockRejectedValueOnce(new Error("lock failed"));
 
     await expect(
       service.invalidate({
@@ -152,5 +175,25 @@ describe("CacheConsistencyService", () => {
         reason: "test",
       }),
     ).rejects.toBeInstanceOf(GeneralInternalServerException);
+  });
+
+  it("should propagate lock contention as conflict", async () => {
+    redlockUsing.mockRejectedValueOnce(new ResourceLockedError("busy"));
+
+    await expect(
+      service.invalidate({
+        domain: "tenant-config",
+        tenantId: "tenant-1",
+        keys: ["k1"],
+        reason: "test",
+      }),
+    ).rejects.toThrow("缓存锁正在使用中，请稍后重试");
+
+    expect(notificationService.publishLockContention).toHaveBeenCalledWith({
+      domain: "tenant-config",
+      tenantId: "tenant-1",
+      keys: ["k1"],
+      lockResource: "lock:cache:tenant-config:tenant-1",
+    });
   });
 });

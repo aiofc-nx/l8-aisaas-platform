@@ -12,6 +12,8 @@ export default {
   moduleNameMapper: {
     "^(\\.{1,2}/.*)\\.js$": "$1",
     "^@anchan828/nest-redlock$": "<rootDir>/src/testing/redlock.mock.ts",
+    "^@anchan828/nest-redlock/dist/cjs/redlock.service.js$":
+      "<rootDir>/src/testing/redlock.mock.ts",
   },
   transformIgnorePatterns: [
     "node_modules/(?!(@anchan828/nest-redlock|redlock)/)",

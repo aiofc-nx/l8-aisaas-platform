@@ -6,7 +6,7 @@ import {
 } from "@hl8/exceptions";
 import { REDIS_CLIENTS } from "@liaoliaots/nestjs-redis/dist/redis/redis.constants.js";
 import type { RedisClients } from "@liaoliaots/nestjs-redis/dist/redis/interfaces/index.js";
-import type { Redis } from "ioredis";
+import type { Redis, RedisKey } from "ioredis";
 import { CacheConfig } from "../config/cache.config.js";
 
 type LoggerWithChild = Logger & {
@@ -165,6 +165,33 @@ export class CacheClientProvider {
 
         return "OK";
       },
+      del: (async (...args: unknown[]): Promise<number> => {
+        const maybeCallback = args.at(-1);
+        const hasCallback = typeof maybeCallback === "function";
+        const keysArgs = hasCallback ? args.slice(0, -1) : args;
+        const keys = keysArgs.filter(
+          (item): item is RedisKey =>
+            typeof item === "string" || Buffer.isBuffer(item),
+        );
+        let removed = 0;
+        for (const key of keys) {
+          const normalizedKey =
+            typeof key === "string" ? key : key.toString("utf-8");
+          if (store.delete(normalizedKey)) {
+            removed += 1;
+          }
+          const existingTimer = timers.get(normalizedKey);
+          if (existingTimer) {
+            clearTimeout(existingTimer);
+            existingTimer.unref?.();
+            timers.delete(normalizedKey);
+          }
+        }
+        if (hasCallback) {
+          (maybeCallback as (err: null, result: number) => void)(null, removed);
+        }
+        return removed;
+      }) as unknown as Redis["del"],
     };
 
     return client as Redis;

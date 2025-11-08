@@ -1,17 +1,5 @@
 import { DynamicModule } from "@nestjs/common";
-import { createRequire } from "node:module";
-
-let cjsRequire: NodeRequire;
-try {
-  cjsRequire = require;
-} catch {
-  cjsRequire = createRequire(process.cwd() + "/package.json");
-}
-
-type RedlockCjsExports = typeof import("@anchan828/nest-redlock");
-const { RedlockModule } = cjsRequire(
-  "@anchan828/nest-redlock",
-) as RedlockCjsExports;
+import { RedlockModule } from "../internal/redlock-loader.js";
 import { REDIS_CLIENTS } from "@liaoliaots/nestjs-redis/dist/redis/redis.constants.js";
 import type { RedisClients } from "@liaoliaots/nestjs-redis/dist/redis/interfaces/index.js";
 import {

@@ -7,8 +7,13 @@ import { CacheNamespaceRegistry } from "./config/cache-namespace.registry.js";
 import { CacheNamespaceService } from "./services/cache-namespace.service.js";
 import { CacheConsistencyService } from "./services/cache-consistency.service.js";
 import { CacheConfig } from "./config/cache.config.js";
+import { CacheNotificationService } from "./services/cache-notification.service.js";
 
+/**
+ * @description 缓存基础设施模块，聚合 Redis 客户端与分布式锁能力，同时暴露缓存一致性相关服务。
+ */
 @Module({
+  imports: [],
   providers: [
     CacheClientProvider,
     CacheMetricsHook,
@@ -17,6 +22,7 @@ import { CacheConfig } from "./config/cache.config.js";
     CacheNamespaceRegistry,
     CacheNamespaceService,
     CacheConsistencyService,
+    CacheNotificationService,
     CacheConfig,
   ],
   exports: [
@@ -27,6 +33,7 @@ import { CacheConfig } from "./config/cache.config.js";
     CacheNamespaceRegistry,
     CacheNamespaceService,
     CacheConsistencyService,
+    CacheNotificationService,
     CacheConfig,
   ],
 })

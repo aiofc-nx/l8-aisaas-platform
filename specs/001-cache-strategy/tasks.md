@@ -88,3 +88,4 @@
 ### Implementation for User Story 3
 
 - [x] T024 [US3] 在 `libs/infra/cache/src/services/cache-consistency.service.ts` 实现缓存一致性服务（持锁执行写前删除与延迟双删，并记录中文通知）
+- [x] T025 [US3] 提供缓存失效/预热 API 与事件通知（`apps/fastify-api/src/modules/cache/cache-consistency.controller.ts`），并补充锁竞争与通知的集成测试
