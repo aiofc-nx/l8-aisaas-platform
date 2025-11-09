@@ -4,6 +4,8 @@ import { ExtractJwt, Strategy } from "passport-jwt";
 import { Logger } from "@hl8/logger";
 import { AuthConfig } from "@hl8/auth";
 import type { JwtRequestUser } from "../types/jwt-request-user.type.js";
+import { TenantContextExecutor } from "@hl8/multi-tenancy";
+import { GeneralUnauthorizedException } from "@hl8/exceptions";
 
 interface JwtPayload {
   sid?: string;
@@ -23,6 +25,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     private readonly config: AuthConfig,
     private readonly logger: Logger,
+    private readonly tenantContextExecutor: TenantContextExecutor,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -32,27 +35,40 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  public validate(payload: JwtPayload): JwtRequestUser {
+  public async validate(payload: JwtPayload): Promise<JwtRequestUser> {
     const userId = payload.uid;
-    if (!userId) {
-      throw new Error("访问令牌缺少用户标识");
+    const tenantId = payload.tid;
+
+    if (!userId || !tenantId) {
+      this.logger.warn("访问令牌缺少关键字段", {
+        hasUserId: Boolean(userId),
+        hasTenantId: Boolean(tenantId),
+      });
+      throw new GeneralUnauthorizedException("登录凭证无效");
     }
 
     const user: JwtRequestUser = {
       userId,
-      tenantId: payload.tid,
+      tenantId,
       roles: payload.roles ?? [],
       permissions: payload.permissions ?? [],
       sessionId: payload.sid,
     };
 
-    this.logger.log("JWT 验证成功", {
-      userId,
-      tenantId: payload.tid,
-      sessionId: payload.sid,
-      permissions: user.permissions?.length ?? 0,
-    });
-
-    return user;
+    return this.tenantContextExecutor.runWithTenantContext(
+      tenantId,
+      async () => {
+        this.logger.log("JWT 验证成功", {
+          userId,
+          tenantId,
+          sessionId: payload.sid,
+          permissions: user.permissions?.length ?? 0,
+        });
+        return user;
+      },
+      {
+        userId,
+      },
+    );
   }
 }

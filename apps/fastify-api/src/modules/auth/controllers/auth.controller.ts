@@ -1,10 +1,5 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from "@nestjs/common";
-import {
-  LoginService,
-  RefreshService,
-  LoginCommand,
-  RefreshCommand,
-} from "@hl8/auth";
+import { LoginUseCase, RefreshTokenUseCase } from "@hl8/auth";
 import { LoginRequestDto, LoginResponseDto } from "../dto/login.dto.js";
 import { RefreshRequestDto } from "../dto/refresh.dto.js";
 
@@ -14,16 +9,17 @@ import { RefreshRequestDto } from "../dto/refresh.dto.js";
 @Controller("auth")
 export class AuthController {
   constructor(
-    private readonly loginService: LoginService,
-    private readonly refreshService: RefreshService,
+    private readonly loginUseCase: LoginUseCase,
+    private readonly refreshTokenUseCase: RefreshTokenUseCase,
   ) {}
 
   @Post("login")
   @HttpCode(HttpStatus.OK)
   public async login(@Body() dto: LoginRequestDto): Promise<LoginResponseDto> {
-    const result = await this.loginService.execute(
-      new LoginCommand(dto.email, dto.password),
-    );
+    const result = await this.loginUseCase.execute({
+      email: dto.email,
+      password: dto.password,
+    });
     return LoginResponseDto.fromResult(result);
   }
 
@@ -32,9 +28,9 @@ export class AuthController {
   public async refresh(
     @Body() dto: RefreshRequestDto,
   ): Promise<LoginResponseDto> {
-    const result = await this.refreshService.execute(
-      new RefreshCommand(dto.refreshToken),
-    );
+    const result = await this.refreshTokenUseCase.execute({
+      refreshToken: dto.refreshToken,
+    });
     return LoginResponseDto.fromResult(result);
   }
 }

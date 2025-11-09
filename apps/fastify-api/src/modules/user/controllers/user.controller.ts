@@ -14,8 +14,7 @@ import {
 import { FastifyRequest } from "fastify";
 import { Logger } from "@hl8/logger";
 import {
-  CreateTenantUserCommand,
-  CreateTenantUserService,
+  CreateTenantUserUseCase,
   EmailAlreadyExistsException,
   UserDomainException,
   UserStatus,
@@ -41,7 +40,7 @@ const USER_STATUS_LABEL: Record<UserStatus, string> = {
 @Controller("internal/tenants")
 export class UserController {
   constructor(
-    private readonly createTenantUserService: CreateTenantUserService,
+    private readonly createTenantUserUseCase: CreateTenantUserUseCase,
     private readonly logger: Logger,
   ) {}
 
@@ -59,17 +58,15 @@ export class UserController {
       throw new ForbiddenException("缺少认证上下文");
     }
 
-    const command: CreateTenantUserCommand = {
-      tenantId,
-      createdBy: userContext.userId,
-      displayName: dto.displayName,
-      email: dto.email,
-      mobile: dto.mobile ?? undefined,
-      roles: dto.roles,
-    };
-
     try {
-      const { user } = await this.createTenantUserService.execute(command);
+      const { user } = await this.createTenantUserUseCase.execute({
+        tenantId,
+        createdBy: userContext.userId,
+        displayName: dto.displayName,
+        email: dto.email,
+        mobile: dto.mobile ?? undefined,
+        roles: dto.roles,
+      });
 
       const response = {
         userId: user.id.value,

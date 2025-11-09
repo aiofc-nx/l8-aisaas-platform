@@ -6,8 +6,8 @@ import {
   AUTH_SESSION_REPOSITORY_TOKEN,
   TOKEN_SERVICE_TOKEN,
   PASSWORD_HASHER_TOKEN,
+  TOKEN_PAYLOAD_BUILDER_TOKEN,
   InMemoryAuthAccountRepository,
-  InMemoryAuthSessionRepository,
   JwtTokenService,
   BcryptPasswordHasher,
   LoginService,
@@ -15,7 +15,9 @@ import {
   Actions,
   Subjects,
   CaslAbilityFactory,
+  TokenBuilderService,
 } from "@hl8/auth";
+import { MikroOrmAuthSessionRepository } from "@hl8/persistence-postgres";
 import { validateSync } from "class-validator";
 import { hashSync } from "bcryptjs";
 
@@ -110,7 +112,7 @@ export const authProviders: Provider[] = [
   },
   {
     provide: AUTH_SESSION_REPOSITORY_TOKEN,
-    useClass: InMemoryAuthSessionRepository,
+    useClass: MikroOrmAuthSessionRepository,
   },
   {
     provide: TOKEN_SERVICE_TOKEN,
@@ -126,6 +128,11 @@ export const authProviders: Provider[] = [
   {
     provide: PASSWORD_HASHER_TOKEN,
     useFactory: () => new BcryptPasswordHasher(),
+  },
+  TokenBuilderService,
+  {
+    provide: TOKEN_PAYLOAD_BUILDER_TOKEN,
+    useExisting: TokenBuilderService,
   },
   {
     provide: CaslAbilityFactory,

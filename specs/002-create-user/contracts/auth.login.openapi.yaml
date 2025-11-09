@@ -1,0 +1,144 @@
+openapi: 3.1.0
+info:
+  title: 平台认证 API
+  version: 0.1.0
+  description: |
+    平台管理员登录、刷新令牌接口定义。
+servers:
+  - url: https://api.hl8.com
+    description: 生产环境
+  - url: https://staging-api.hl8.com
+    description: 预发布环境
+  - url: http://localhost:3001
+    description: 本地开发
+paths:
+  /auth/login:
+    post:
+      summary: 平台管理员登录
+      tags:
+        - 认证
+      description: 通过邮箱 + 密码登录平台，返回访问令牌与刷新令牌。
+      operationId: login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: 登录成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: 登录凭证无效
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '423':
+          description: 账户被锁定或禁用
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+  /auth/refresh:
+    post:
+      summary: 刷新访问令牌
+      tags:
+        - 认证
+      description: 使用刷新令牌获取新的访问令牌与刷新令牌（旋转机制）。
+      operationId: refresh
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshRequest'
+      responses:
+        '200':
+          description: 刷新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: 刷新令牌无效或已过期
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+components:
+  schemas:
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          description: 平台管理员邮箱地址
+        password:
+          type: string
+          description: 登录密码
+    RefreshRequest:
+      type: object
+      required:
+        - refreshToken
+      properties:
+        refreshToken:
+          type: string
+          description: 刷新令牌
+    LoginResponse:
+      type: object
+      required:
+        - accessToken
+        - refreshToken
+        - expiresIn
+        - refreshExpiresIn
+      properties:
+        accessToken:
+          type: string
+          description: 访问令牌（Bearer）
+        refreshToken:
+          type: string
+          description: 刷新令牌
+        expiresIn:
+          type: integer
+          description: 访问令牌有效期（秒）
+        refreshExpiresIn:
+          type: integer
+          description: 刷新令牌有效期（秒）
+        tokenType:
+          type: string
+          example: Bearer
+        issuedAt:
+          type: string
+          format: date-time
+          description: 令牌签发时间
+    ProblemDetails:
+      type: object
+      required:
+        - title
+        - detail
+        - status
+        - instance
+      properties:
+        title:
+          type: string
+        detail:
+          type: string
+        status:
+          type: integer
+        instance:
+          type: string
+        errorCode:
+          type: string
+          nullable: true
+

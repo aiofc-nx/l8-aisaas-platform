@@ -1,14 +1,9 @@
 {
-  "extends": "@repo/typescript-config/nestjs.json",
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "strictPropertyInitialization": false,
     "outDir": "./dist",
-    "baseUrl": "./",
     "strict": false,
-    "useDefineForClassFields": false,
-    "paths": {
-      "@hl8/user": ["../../libs/modules/user/src/index.ts"],
-      "@hl8/auth": ["../../libs/modules/auth/src/index.ts"]
-    }
+    "useDefineForClassFields": false
   }
 }

@@ -14,12 +14,15 @@ import { HttpAdapterHost } from "@nestjs/core";
 import request from "supertest";
 import { Logger } from "@hl8/logger";
 import { HttpExceptionFilter } from "@hl8/exceptions";
-import { AuthController } from "../../../src/modules/auth/controllers/auth.controller.js";
-import { authProviders } from "../../../src/modules/auth/providers/auth.providers.js";
 import {
   AUTH_SESSION_REPOSITORY_TOKEN,
   InMemoryAuthSessionRepository,
 } from "@hl8/auth";
+import { AuthModule } from "../../../src/modules/auth/auth.module.js";
+import { setupClsModule } from "@hl8/async-storage";
+import { getEntityManagerToken, getRepositoryToken } from "@mikro-orm/nestjs";
+import { TenantContextExecutor } from "@hl8/multi-tenancy";
+import { AuthSessionEntity } from "@hl8/persistence-postgres";
 
 const ADMIN_EMAIL = "admin@example.com";
 const ADMIN_PASSWORD = "Admin@123";
@@ -35,11 +38,41 @@ describe("AuthController (integration)", () => {
     child: jest.fn().mockReturnThis(),
   } as unknown as Logger;
 
+  const createEntityManagerStub = () => ({
+    persist: jest.fn(),
+    persistAndFlush: jest.fn(),
+    flush: jest.fn(),
+    assign: jest.fn(),
+    remove: jest.fn(),
+    nativeInsert: jest.fn(),
+    nativeUpdate: jest.fn(),
+    nativeDelete: jest.fn(),
+    find: jest.fn(),
+    findOne: jest.fn(),
+  });
+
   beforeAll(async () => {
     const testingModule = await Test.createTestingModule({
-      controllers: [AuthController],
-      providers: [...authProviders, { provide: Logger, useValue: loggerStub }],
-    }).compile();
+      imports: [setupClsModule(), AuthModule],
+    })
+      .overrideProvider(AUTH_SESSION_REPOSITORY_TOKEN)
+      .useValue(new InMemoryAuthSessionRepository())
+      .overrideProvider(Logger)
+      .useValue(loggerStub)
+      .overrideProvider(getEntityManagerToken("postgres"))
+      .useValue(createEntityManagerStub())
+      .overrideProvider(getRepositoryToken(AuthSessionEntity, "postgres"))
+      .useValue({})
+      .overrideProvider(TenantContextExecutor)
+      .useValue({
+        getTenantIdOrFail: jest.fn(
+          () => "11111111-1111-4111-8111-111111111111",
+        ),
+        runWithTenantContext: jest.fn(
+          async (_tenantId, handler: () => Promise<unknown>) => handler(),
+        ),
+      })
+      .compile();
 
     app = testingModule.createNestApplication(new FastifyAdapter());
     app.useGlobalPipes(

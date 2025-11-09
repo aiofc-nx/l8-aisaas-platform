@@ -17,14 +17,63 @@ import { HttpExceptionFilter } from "@hl8/exceptions";
 import { AuthModule } from "../../../src/modules/auth/auth.module.js";
 import { UserModule } from "../../../src/modules/user/user.module.js";
 import { setupClsModule } from "@hl8/async-storage";
-import { USER_REPOSITORY_TOKEN } from "../../../src/modules/user/providers/create-user.providers.js";
+import { TenantContextModule, TenantContextExecutor } from "@hl8/multi-tenancy";
+import {
+  USER_PROJECTION_REPOSITORY_TOKEN,
+  USER_REPOSITORY_TOKEN,
+} from "../../../src/modules/user/providers/create-user.providers.js";
 import { InMemoryUserRepository } from "@hl8/user";
+import { MongoDomainEventStore } from "@hl8/persistence-mongo";
+import {
+  AuthSessionEntity,
+  UserEntity,
+  UserProjectionEntity,
+  UserProjectionRepository,
+} from "@hl8/persistence-postgres";
+import {
+  AUTH_SESSION_REPOSITORY_TOKEN,
+  InMemoryAuthSessionRepository,
+} from "@hl8/auth";
+import { getEntityManagerToken, getRepositoryToken } from "@mikro-orm/nestjs";
 
 const TENANT_ID = "11111111-1111-4111-8111-111111111111";
 const PLATFORM_ADMIN_ID = "33333333-3333-4333-8333-333333333333";
 
+const createEntityManagerStub = () => ({
+  persist: jest.fn(),
+  persistAndFlush: jest.fn(),
+  flush: jest.fn(),
+  assign: jest.fn(),
+  remove: jest.fn(),
+  nativeInsert: jest.fn(),
+  nativeUpdate: jest.fn(),
+  nativeDelete: jest.fn(),
+  find: jest.fn(),
+  findOne: jest.fn(),
+});
+
+const createRepositoryStub = () => ({
+  findOne: jest.fn(),
+  find: jest.fn(),
+  assign: jest.fn(),
+  persistAndFlush: jest.fn(),
+  nativeInsert: jest.fn(),
+  nativeUpdate: jest.fn(),
+  nativeDelete: jest.fn(),
+});
+
 describe("UserController (integration)", () => {
   let app: INestApplication;
+  const inMemoryRepo = new InMemoryUserRepository();
+  const projectionStub = {
+    upsert: jest.fn(),
+  };
+  const eventStoreStub = {
+    append: jest.fn(),
+    load: jest.fn(),
+    clear: jest.fn(),
+  };
+
   let repository: InMemoryUserRepository;
   let adminAccessToken: string;
 
@@ -36,8 +85,40 @@ describe("UserController (integration)", () => {
 
   beforeAll(async () => {
     const testingModule = await Test.createTestingModule({
-      imports: [setupClsModule(), AuthModule, UserModule],
+      imports: [
+        setupClsModule(),
+        AuthModule,
+        TenantContextModule.register(),
+        UserModule,
+      ],
     })
+      .overrideProvider(AUTH_SESSION_REPOSITORY_TOKEN)
+      .useValue(new InMemoryAuthSessionRepository())
+      .overrideProvider(USER_REPOSITORY_TOKEN)
+      .useValue(inMemoryRepo)
+      .overrideProvider(USER_PROJECTION_REPOSITORY_TOKEN)
+      .useValue(projectionStub)
+      .overrideProvider(MongoDomainEventStore)
+      .useValue(eventStoreStub)
+      .overrideProvider(getEntityManagerToken("postgres"))
+      .useValue(createEntityManagerStub())
+      .overrideProvider(getEntityManagerToken("mongo"))
+      .useValue(createEntityManagerStub())
+      .overrideProvider(getRepositoryToken(AuthSessionEntity, "postgres"))
+      .useValue({})
+      .overrideProvider(getRepositoryToken(UserEntity, "postgres"))
+      .useValue(createRepositoryStub())
+      .overrideProvider(getRepositoryToken(UserProjectionEntity, "postgres"))
+      .useValue(createRepositoryStub())
+      .overrideProvider(UserProjectionRepository)
+      .useValue(projectionStub)
+      .overrideProvider(TenantContextExecutor)
+      .useValue({
+        getTenantIdOrFail: jest.fn(() => TENANT_ID),
+        runWithTenantContext: jest.fn(
+          async (_tenantId, handler: () => Promise<unknown>) => handler(),
+        ),
+      })
       .overrideProvider(Logger)
       .useValue(loggerStub)
       .compile();
@@ -66,6 +147,8 @@ describe("UserController (integration)", () => {
 
   beforeEach(() => {
     repository.clear();
+    projectionStub.upsert.mockClear();
+    eventStoreStub.append.mockClear();
     jest.clearAllMocks();
   });
 
@@ -85,6 +168,7 @@ describe("UserController (integration)", () => {
     if (token) {
       req.set("Authorization", `Bearer ${token}`);
     }
+    req.set("x-tenant-id", TENANT_ID);
     return req;
   };
 
