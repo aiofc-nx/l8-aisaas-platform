@@ -1,9 +1,8 @@
 {
-  "extends": "@repo/typescript-config/nestjs.json",
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "strictPropertyInitialization": false,
     "outDir": "./dist",
-    "baseUrl": "./",
     "strict": false,
     "useDefineForClassFields": false
   }

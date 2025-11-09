@@ -1,13 +1,22 @@
 import { PinoLoggingModule } from "@hl8/logger";
 import { TypedConfigModule, dotenvLoader, directoryLoader } from "@hl8/config";
-import { setupClsModule } from "@hl8/async-storage";
 import { Module } from "@nestjs/common";
+import { MikroOrmModule } from "@mikro-orm/nestjs";
+import { APP_INTERCEPTOR } from "@nestjs/core";
+import { createMultiMikroOrmConfig } from "@hl8/persistence";
+import {
+  TenantContextModule,
+  TenantEnforceInterceptor,
+  TenantAwareSubscriber,
+} from "@hl8/multi-tenancy";
 import * as path from "path";
 import { AppController } from "./app.controller.js";
 import { AppConfig } from "./config/app.config.js";
 import { TenantConfigModule } from "./modules/tenant-config/tenant-config.module.js";
 import { CacheModule } from "./modules/cache/cache.module.js";
 import { CacheInfrastructureProviderModule } from "./modules/cache/cache-infrastructure.provider.module.js";
+import { UserModule } from "./modules/user/user.module.js";
+import { AuthModule } from "./modules/auth/auth.module.js";
 
 /**
  * @description HL8 SAAS 平台应用的根模块，负责聚合配置能力与日志能力，确保上下游模块可获得统一的基础设施支持
@@ -37,8 +46,6 @@ import { CacheInfrastructureProviderModule } from "./modules/cache/cache-infrast
  * - 日志能力由 @hl8/logger 提供，其他 Fastify 插件按需在 main.ts 或 bootstrap.ts 中注册
  */
 @Module({
-  controllers: [AppController],
-  providers: [],
   imports: [
     // 配置模块 - 类型安全的配置管理（必须在最前面，因为其他模块可能依赖 AppConfig）
     // 配置加载顺序（按优先级从高到低，后面的会覆盖前面的）：
@@ -77,6 +84,17 @@ import { CacheInfrastructureProviderModule } from "./modules/cache/cache-infrast
       ],
     }),
     CacheInfrastructureProviderModule,
+    MikroOrmModule.forRootAsync({
+      contextName: "postgres",
+      inject: [Logger],
+      useFactory: (logger: Logger) =>
+        createMultiMikroOrmConfig(logger).postgres,
+    }),
+    MikroOrmModule.forRootAsync({
+      contextName: "mongo",
+      inject: [Logger],
+      useFactory: (logger: Logger) => createMultiMikroOrmConfig(logger).mongo,
+    }),
     // Fastify 专用日志模块（零开销，复用 Fastify Pino）
     // 注意：必须在 TenantsModule 之前加载，因为 TenantsController 依赖 Logger
     // 启用企业级功能：上下文注入、敏感信息脱敏、性能监控、美化输出
@@ -130,11 +148,21 @@ import { CacheInfrastructureProviderModule } from "./modules/cache/cache-infrast
         },
       },
     }),
-    // 全局异步上下文模块，供缓存与权限模块记录 CLS 信息
-    setupClsModule(),
+    // 多租户上下文模块（封装 CLS 初始化与租户执行器）
+    TenantContextModule.register(),
     // 业务模块：租户配置缓存接口
     TenantConfigModule,
     CacheModule,
+    UserModule,
+    AuthModule,
+  ],
+  controllers: [AppController],
+  providers: [
+    TenantAwareSubscriber,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: TenantEnforceInterceptor,
+    },
   ],
 })
 export class AppModule {}

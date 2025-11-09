@@ -63,6 +63,12 @@ function createCacheConfig(): CacheConfig {
   config.clients = [clientConfig];
   config.lock = config.lock ?? new RedisLockConfig();
 
+  const useMemoryFallbackEnv =
+    process.env.CACHE_REDIS_USE_MEMORY ?? process.env.CACHE_USE_MEMORY_FALLBACK;
+  if (useMemoryFallbackEnv !== undefined) {
+    config.useMemoryFallback = useMemoryFallbackEnv === "true";
+  }
+
   return config;
 }
 
@@ -72,12 +78,19 @@ function createCacheConfig(): CacheConfig {
 async function createRedisClients(
   cacheConfig: CacheConfig,
   logger: Logger,
-): Promise<RedisClients> {
+): Promise<RedisClients | undefined> {
   const clients = new Map<string, RedisClient>();
   const targetLogger =
     typeof logger.child === "function"
       ? logger.child({ context: "RedisClientsFactory" })
       : logger;
+
+  if (cacheConfig.useMemoryFallback) {
+    targetLogger.warn("已启用内存缓存占位，跳过 Redis 客户端连接", {
+      reason: "useMemoryFallback",
+    });
+    return undefined;
+  }
 
   const clientConfigs = cacheConfig.clients ?? [];
   if (clientConfigs.length === 0) {
@@ -154,9 +167,31 @@ async function createRedisClients(
  * @description 基于现有 Redis 客户端实例化 Redlock，用于缓存一致性场景。
  */
 function createRedlock(
-  clients: RedisClients,
+  clients: RedisClients | undefined,
   cacheConfig: CacheConfig,
-): Redlock {
+  logger: Logger,
+): Redlock | undefined {
+  const targetLogger =
+    typeof logger.child === "function"
+      ? logger.child({ context: "RedlockFactory" })
+      : logger;
+
+  if (cacheConfig.useMemoryFallback) {
+    targetLogger.warn("已启用内存缓存，占位跳过分布式锁初始化", {
+      reason: "useMemoryFallback",
+    });
+    return undefined;
+  }
+
+  if (!clients || clients.size === 0) {
+    targetLogger.error("未检测到 Redis 客户端，无法初始化分布式锁", {
+      reason: "missingClients",
+    });
+    throw new GeneralInternalServerException(
+      "未检测到任何 Redis 客户端，无法初始化分布式锁",
+    );
+  }
+
   const redisClients = [...clients.values()];
   if (redisClients.length === 0) {
     throw new GeneralInternalServerException(
@@ -225,7 +260,7 @@ async function waitForRedisReady(client: RedisClient): Promise<void> {
     {
       provide: CACHE_REDLOCK_TOKEN,
       useFactory: createRedlock,
-      inject: [REDIS_CLIENTS, CacheConfig],
+      inject: [REDIS_CLIENTS, CacheConfig, Logger],
     },
   ],
   exports: [CacheConfig, REDIS_CLIENTS, CACHE_REDLOCK_TOKEN],

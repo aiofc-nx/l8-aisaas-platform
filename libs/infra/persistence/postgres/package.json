@@ -1,0 +1,47 @@
+{
+  "name": "@hl8/persistence-postgres",
+  "version": "1.0.0",
+  "description": "PostgreSQL 持久化适配层，提供 MikroORM 配置与模块化封装",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "build:types": "tsc --emitDeclarationOnly --outDir dist",
+    "dev": "tsc -p tsconfig.build.json --watch",
+    "lint": "eslint . --fix",
+    "lint:check": "eslint .",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest"
+  },
+  "dependencies": {
+    "@hl8/logger": "workspace:*",
+    "@hl8/user": "workspace:*",
+    "@mikro-orm/core": "^6.4.16",
+    "@mikro-orm/migrations": "^6.4.16",
+    "@mikro-orm/postgresql": "^6.4.16",
+    "@mikro-orm/nestjs": "^6.1.1",
+    "class-validator": "0.14.2"
+  },
+  "devDependencies": {
+    "@hl8/config": "workspace:*",
+    "@jest/globals": "^30.2.0",
+    "@mikro-orm/cli": "^6.4.16",
+    "@nestjs/common": "11.1.8",
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@types/jest": "^30.0.0",
+    "@types/node": "24.10.0",
+    "jest": "^30.2.0",
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

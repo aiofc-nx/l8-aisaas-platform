@@ -1,11 +1,10 @@
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 import { createRequire } from "node:module";
 
-const require = createRequire(path.resolve(process.cwd(), "package.json"));
-const workspaceRoot = path.resolve(process.cwd(), "..", "..");
+const nodeRequire = createRequire(path.resolve(process.cwd(), "package.json"));
+const workspaceRoot = path.resolve(process.cwd());
 const libsRoot = path.resolve(workspaceRoot, "libs");
-const redlockEsmEntry = require.resolve("@anchan828/nest-redlock");
+const redlockEsmEntry = nodeRequire.resolve("@anchan828/nest-redlock");
 const redlockEsmRoot = path.dirname(redlockEsmEntry);
 const redlockEsmMapper = path.join(redlockEsmRoot, "$1").replace(/\\/g, "/");
 
@@ -57,6 +56,20 @@ export default {
       libsRoot,
       "infra/async-storage/src/index.ts",
     ),
+    "^@hl8/multi-tenancy$": path.resolve(
+      libsRoot,
+      "infra/multi-tenancy/src/index.ts",
+    ),
+    "^@hl8/persistence-mongo$": path.resolve(
+      libsRoot,
+      "infra/persistence/mongo/src/index.ts",
+    ),
+    "^@hl8/persistence-postgres$": path.resolve(
+      libsRoot,
+      "infra/persistence/postgres/src/index.ts",
+    ),
+    "^@hl8/user$": path.resolve(libsRoot, "domains/user/src/index.ts"),
+    "^@hl8/auth$": path.resolve(libsRoot, "domains/auth/src/index.ts"),
     "^@anchan828/nest-redlock/dist/esm/(.*)$": redlockEsmMapper,
   },
 };

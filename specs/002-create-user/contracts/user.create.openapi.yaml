@@ -1,0 +1,150 @@
+openapi: 3.1.0
+info:
+  title: 用户管理 - 创建用户 API
+  version: 0.1.0
+  description: |
+    平台管理员为指定租户创建首个（或新增）用户。
+servers:
+  - url: https://api.hl8.com
+    description: 生产环境
+  - url: https://staging-api.hl8.com
+    description: 预发布环境
+  - url: http://localhost:3001
+    description: 本地开发
+paths:
+  /tenants/{tenantId}/users:
+    post:
+      summary: 创建租户用户
+      tags:
+        - 用户管理
+      description: 平台管理员在指定租户下创建用户，邮箱需平台范围唯一。
+      operationId: createTenantUser
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tenantId
+          in: path
+          required: true
+          description: 目标租户的唯一标识
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+      responses:
+        '201':
+          description: 创建成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateUserResponse'
+        '400':
+          description: 请求体非法或必填字段缺失
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '409':
+          description: 邮箱或手机号发生冲突
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '401':
+          description: 平台管理员未认证或权限不足
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '500':
+          description: 服务端错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+components:
+  schemas:
+    CreateUserRequest:
+      type: object
+      required:
+        - displayName
+        - email
+      properties:
+        displayName:
+          type: string
+          maxLength: 50
+          description: 用户显示名称
+        email:
+          type: string
+          format: email
+          description: 平台范围唯一邮箱，系统自动转小写
+        mobile:
+          type: string
+          nullable: true
+          pattern: '^1\\d{10}$'
+          description: 可选手机号
+        roles:
+          type: array
+          items:
+            type: string
+            enum:
+              - tenant-admin
+          minItems: 1
+          description: 角色数组，默认包含租户管理员
+    CreateUserResponse:
+      type: object
+      required:
+        - userId
+        - tenantId
+        - status
+        - createdAt
+      properties:
+        userId:
+          type: string
+          format: uuid
+        tenantId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum:
+            - 待激活
+            - 活跃
+            - 禁用
+            - 锁定
+            - 过期
+        createdAt:
+          type: string
+          format: date-time
+        requestId:
+          type: string
+          description: Fastify requestId 或上游追踪 ID
+    ProblemDetails:
+      type: object
+      required:
+        - title
+        - detail
+        - status
+        - instance
+      properties:
+        title:
+          type: string
+        detail:
+          type: string
+        status:
+          type: integer
+        instance:
+          type: string
+        errorCode:
+          type: string
+          nullable: true
+securitySchemes:
+  bearerAuth:
+    type: http
+    scheme: bearer
+    bearerFormat: JWT
+
